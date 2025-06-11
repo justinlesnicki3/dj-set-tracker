@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useAppContext } from '../AppContext';
 
 const HomeScreen = () => {
     const [djName, setDjName] = useState('');
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigation = useNavigation();
+    const { addTrackedDJ, trackedDJs } = useAppContext();
 
     const searchDJ = async () => {
         setLoading(true);
@@ -38,6 +40,16 @@ const HomeScreen = () => {
             onChangeText={setDjName}
             />
             <Button title="Search" onPress={searchDJ} disabled={loading || !djName.trim()}/>
+            <Button
+                title='Track this DJ'
+                onPress={() => addTrackedDJ(djName)}
+                disabled={!djName.trim() || trackedDJs.includes(djName.toLowerCase())} 
+            />
+            {trackedDJs.includes(djName.toLowerCase()) && (
+                <Text style={{color: 'green', marginTop: 6}}>
+                    You're tracking {djName}
+                </Text>
+            )}
             <View style={{marginVertical: 10}}>
                 <Button title='Go to Library' onPress={() => navigation.navigate('Library')} />
                 <Button title='Go to my Leaks' onPress={() => navigation.navigate('MyLeaks')} />

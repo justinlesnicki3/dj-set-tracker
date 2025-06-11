@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { useAppContext } from '../AppContext';
+
 
 const sampleLeaks = [
     { id: '1', title: "Unreleased Track 1", djSet: 'Carl Cox Live Set', start: '3:24', end: '5.36' },

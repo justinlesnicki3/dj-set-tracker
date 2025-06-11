@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, FlatList, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import { useAppContext } from '../AppContext';
 
 const sampleLibrary = [
     {
