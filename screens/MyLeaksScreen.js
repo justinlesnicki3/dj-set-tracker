@@ -10,20 +10,20 @@ const sampleLeaks = [
 
 const MyLeaksScreen = () => {
     const renderLeak = ({ item }) => (
-        <TouchableOpacity style={StyleSheet.leakItem} onPress={() => {/* Play clip or show details */}}>
-            <Text style={StyleSheet.leakTitle}>{item.title}</Text>
-            <Text style={StyleSheet.leakInfo}>{`${item.djSet} | ${item.start} - ${item.end}`}</Text>
+        <TouchableOpacity style={styles.leakItem} onPress={() => {/* Play clip or show details */}}>
+            <Text style={styles.leakTitle}>{item.title}</Text>
+            <Text style={styles.leakInfo}>{`${item.djSet} | ${item.start} - ${item.end}`}</Text>
         </TouchableOpacity>
     );
 
     return (
-        <View style={StyleSheet.container}>
-            <Text style={StyleSheet.header}>My Leaks</Text>
+        <View style={styles.container}>
+            <Text style={styles.header}>My Leaks</Text>
             <FlatList
             data={sampleLeaks}
             keyExtractor={(item) => item.id}
             renderItem={renderLeak}
-            ListEmptyComponent={<Text style={StyleSheet.empty}>No leaks saved yet</Text>}
+            ListEmptyComponent={<Text style={styles.empty}>No leaks saved yet</Text>}
             />
         </View>
     );

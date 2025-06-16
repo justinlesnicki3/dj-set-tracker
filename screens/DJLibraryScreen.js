@@ -17,20 +17,20 @@ const sampleLibrary = [
 
 const DJLibraryScreen = ({ navigation }) => {
     const renderItem = ({ item }) => (
-        <TouchableOpacity style = {StyleSheet.item} onPress={() => {/* Navigate to details or player */}}>
-            <Image source={{ uri: item.thumbnail }} style={StyleSheet.thumbnail} />
-            <Text style={StyleSheet.title}>{item.title}</Text>
+        <TouchableOpacity style = {styles.item} onPress={() => navigation.navigate('Clip', {title: item.title})}>
+            <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+            <Text style={styles.title}>{item.title}</Text>
         </TouchableOpacity>
     );
 
     return (
-        <View style={StyleSheet.container}>
-            <Text style={StyleSheet.header}>Your DJ Library</Text>
+        <View style={styles.container}>
+            <Text style={styles.header}>Your DJ Library</Text>
             <FlatList
             data={sampleLibrary}
-            keyExtractor={(Item) => item.id}
+            keyExtractor={(item) => item.id}
             renderItem={renderItem}
-            ListEmptyComponent={<Text style={StyleSheet.empty}>No DJ sets saved yet</Text>}
+            ListEmptyComponent={<Text style={styles.empty}>No DJ sets saved yet</Text>}
             />
         </View>
     );

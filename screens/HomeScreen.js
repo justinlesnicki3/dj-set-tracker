@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
+import { Image } from 'react-native';
+import CustomButton from '../components/CustomButton'; 
 
 const HomeScreen = () => {
     const [djName, setDjName] = useState('');
@@ -15,20 +17,27 @@ const HomeScreen = () => {
         console.log('Searching for:', djName);
         setTimeout(() => {
             setResults([
-        { id: '1', title: `Sample set from ${djName}`, videoId: 'abc123' },
-        { id: '2', title: `Another set by ${djName}`, videoId: 'def456' },
+        { id: '1', title: `Sample set from ${djName}`, videoId: 'abc123', thumbnail: 'https://via.placeholder.com/100x56.png?text=DJ+Set', },
+        { id: '2', title: `Another set by ${djName}`, videoId: 'def456', thumbnail: `https://i.ytimg.com/vi/def456/hqdefault.jpg`, },
       ]);
       setLoading(false);
     }, 1500);
   };
 
-  const renderResultItem = ({ item }) => (
-    <TouchableOpacity
-        style={styles.resultItem}
-        onPress={() => navigation.navigate('Library', { videoId: item.videoId})}>
-            <Text style={styles.resultText}>{item.title}</Text>
-        </TouchableOpacity>
-  );
+    const renderResultItem = ({ item }) => (
+  <TouchableOpacity
+    style={styles.resultItem}
+    onPress={() => navigation.navigate('Library', { videoId: item.videoId })}
+  >
+    {item.thumbnail && (
+      <Image
+        source={{ uri: item.thumbnail }}
+        style={styles.resultThumbnail}
+      />
+    )}
+    <Text style={styles.resultText}>{item.title}</Text>
+  </TouchableOpacity>
+);
 
     return (
         <View style={styles.container}>
@@ -39,8 +48,8 @@ const HomeScreen = () => {
             value={djName}
             onChangeText={setDjName}
             />
-            <Button title="Search" onPress={searchDJ} disabled={loading || !djName.trim()}/>
-            <Button
+            <CustomButton title="Search" onPress={searchDJ} disabled={loading || !djName.trim()}/>
+            <CustomButton
                 title='Track this DJ'
                 onPress={() => addTrackedDJ(djName)}
                 disabled={!djName.trim() || trackedDJs.includes(djName.toLowerCase())} 
@@ -51,8 +60,8 @@ const HomeScreen = () => {
                 </Text>
             )}
             <View style={{marginVertical: 10}}>
-                <Button title='Go to Library' onPress={() => navigation.navigate('Library')} />
-                <Button title='Go to my Leaks' onPress={() => navigation.navigate('MyLeaks')} />
+                <CustomButton title='Go to Library' onPress={() => navigation.navigate('Library')} />
+                <CustomButton title='Go to my Leaks' onPress={() => navigation.navigate('MyLeaks')} />
             </View>
             {loading ? (
                 <ActivityIndicator size="large" color="#007AFF" />
@@ -81,6 +90,8 @@ const styles = StyleSheet.create({
         borderRadius: 6,
     },
     resultItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
         padding: 12,
         borderBottomColor: '#eee',
         borderBottomWidth: 1,
@@ -88,8 +99,19 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         marginBottom: 6,
     },
-    resultText: {fontSize: 16},
+    resultThumbnail: {
+        width: 100,
+        height: 56,
+        borderRadius: 6,
+        marginRight: 10,
+    },
+    resultText: {
+        fontSize: 16,
+        flexShrink: 1,
+    },
+
     emptyText: {textAlign: 'center', marginTop: 20, color: '#888'},
+
 });
 
 export default HomeScreen;
