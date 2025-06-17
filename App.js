@@ -9,18 +9,20 @@ import { AppProvider } from './AppContext';
 import ClipScreen from './screens/ClipScreen';
 
 const Stack = createNativeStackNavigator();
+console.log("App loaded");
+
 
 export default function App() {
   return (
     <AppProvider>
-    <NavigationContainer>
+      <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Library" component={DJLibraryScreen} />
         <Stack.Screen name="MyLeaks" component={MyLeaksScreen} />
         <Stack.Screen name="Clip" component={ClipScreen} />
       </Stack.Navigator>
-    </NavigationContainer>
+      </NavigationContainer>
     </AppProvider>
 
   );

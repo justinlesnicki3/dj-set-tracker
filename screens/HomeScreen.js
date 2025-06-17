@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet, FlatList, TouchableOpacity, 
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 import { Image } from 'react-native';
+import { searchDJSets } from '../services/youtube';
 import CustomButton from '../components/CustomButton'; 
 
 const HomeScreen = () => {
@@ -15,13 +16,11 @@ const HomeScreen = () => {
     const searchDJ = async () => {
         setLoading(true);
         console.log('Searching for:', djName);
-        setTimeout(() => {
-            setResults([
-        { id: '1', title: `Sample set from ${djName}`, videoId: 'abc123', thumbnail: 'https://via.placeholder.com/100x56.png?text=DJ+Set', },
-        { id: '2', title: `Another set by ${djName}`, videoId: 'def456', thumbnail: `https://i.ytimg.com/vi/def456/hqdefault.jpg`, },
-      ]);
-      setLoading(false);
-    }, 1500);
+        const results = await searchDJSets(djName);
+        console.log("✅ YouTube API Results:", results);
+        setResults(results);
+        setLoading(false);
+
   };
 
     const renderResultItem = ({ item }) => (
@@ -38,6 +37,9 @@ const HomeScreen = () => {
     <Text style={styles.resultText}>{item.title}</Text>
   </TouchableOpacity>
 );
+
+console.log("HomeScreen rendered");
+
 
     return (
         <View style={styles.container}>
