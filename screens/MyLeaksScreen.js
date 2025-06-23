@@ -3,16 +3,15 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native
 import { useAppContext } from '../AppContext';
 
 
-const sampleLeaks = [
-    { id: '1', title: "Unreleased Track 1", djSet: 'Carl Cox Live Set', start: '3:24', end: '5.36' },
-    { id: '2', title: 'Sneak Peek Track 2,', djSet: 'Charlotte de Witte Set', start: '12:10', end: '14:05'},
-];
-
 const MyLeaksScreen = () => {
+
+    const {myLeaks} = useAppContext();
+
     const renderLeak = ({ item }) => (
         <TouchableOpacity style={styles.leakItem} onPress={() => {/* Play clip or show details */}}>
             <Text style={styles.leakTitle}>{item.title}</Text>
-            <Text style={styles.leakInfo}>{`${item.djSet} | ${item.start} - ${item.end}`}</Text>
+            <Text style={styles.leakInfo}>{`${item.start} - ${item.end}`}</Text>
+
         </TouchableOpacity>
     );
 
@@ -20,7 +19,7 @@ const MyLeaksScreen = () => {
         <View style={styles.container}>
             <Text style={styles.header}>My Leaks</Text>
             <FlatList
-            data={sampleLeaks}
+            data={myLeaks}
             keyExtractor={(item) => item.id}
             renderItem={renderLeak}
             ListEmptyComponent={<Text style={styles.empty}>No leaks saved yet</Text>}

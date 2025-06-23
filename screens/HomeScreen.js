@@ -11,7 +11,7 @@ const HomeScreen = () => {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigation = useNavigation();
-    const { addTrackedDJ, trackedDJs } = useAppContext();
+    const { addTrackedDJ, trackedDJs, addSetToLibrary } = useAppContext();
 
     const searchDJ = async () => {
         setLoading(true);
@@ -24,22 +24,26 @@ const HomeScreen = () => {
   };
 
     const renderResultItem = ({ item }) => (
-  <TouchableOpacity
-    style={styles.resultItem}
-    onPress={() => navigation.navigate('Library', { videoId: item.videoId })}
-  >
+  <View style={styles.resultItem}>
     {item.thumbnail && (
-      <Image
-        source={{ uri: item.thumbnail }}
-        style={styles.resultThumbnail}
-      />
+        <Image
+         source={{ uri: item.thumbnail}}
+         style={styles.resultThumbnail}
+        />
     )}
-    <Text style={styles.resultText}>{item.title}</Text>
-  </TouchableOpacity>
+    <View style={{flex: 1}}>
+        <Text style={styles.resultText}>{item.title}</Text>
+        <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => addSetToLibrary(item)}
+        >
+            <Text style={styles.addButtonText}>Add to Library</Text>
+        </TouchableOpacity>
+    </View>
+  </View>
 );
 
 console.log("HomeScreen rendered");
-
 
     return (
         <View style={styles.container}>
@@ -112,7 +116,26 @@ const styles = StyleSheet.create({
         flexShrink: 1,
     },
 
-    emptyText: {textAlign: 'center', marginTop: 20, color: '#888'},
+    emptyText: 
+    {
+        textAlign: 'center', 
+        marginTop: 20, 
+        color: '#888'
+    },
+
+    addButton: {
+        marginTop: 8,
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        backgroundColor: '#007AFF',
+        borderRadius: 4,
+        alignSelf: 'flex-start',
+    },
+
+    addButtonText: {
+        color: '#fff',
+        fontSize: 14,
+    },
 
 });
 

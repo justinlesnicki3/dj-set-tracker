@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { useAppContext } from '../AppContext';
 
 const ClipScreen = ({ route, navigation }) => {
     const { title } = route.params;
     const [start, setStart] = useState('');
     const [end, setEnd] = useState('');
+    const { addLeak } = useAppContext();
 
     return (
         <View style={styles.container}>
@@ -12,9 +14,15 @@ const ClipScreen = ({ route, navigation }) => {
             <TextInput placeholder='Start Time (e.g. 3:24)' value={start} onChangeText={setStart} style={styles.input} />
             <TextInput placeholder='End Time (e.g. 5:36)' value={end} onChangeText={setEnd} style={styles.input} />
             <Button title="Save to My Leaks" onPress={() => {
-                // Save to context or console.log for now
+                addLeak({
+                    id: Date.now().toString(),
+                    title,
+                    start,
+                    end
+                });
                 navigation.goBack();
-            }} />
+            }} 
+        />
         </View>
     );
 };

@@ -2,22 +2,17 @@ import React from 'react';
 import {View, Text, FlatList, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import { useAppContext } from '../AppContext';
 
-const sampleLibrary = [
-    {
-        id: 'abc123',
-        title: 'Carl Cox Live Set - Ibiza 2024',
-        thumbnail: 'https://i.ytimg.com/vi/abc123/hqdefault.jpg',
-    },
-    {
-        id: 'def456',
-        title: 'Charlotte de Witte - Boiler Room',
-        thumbnail: 'https://i.ytimg.com/vi/def456/hqdefault.jpg',
-    },
-];
+
 
 const DJLibraryScreen = ({ navigation }) => {
-    const renderItem = ({ item }) => (
-        <TouchableOpacity style = {styles.item} onPress={() => navigation.navigate('Clip', {title: item.title})}>
+    
+    const {djLibrary} = useAppContext();
+
+    const renderItem = ({item}) => (
+        <TouchableOpacity
+            style={styles.item}
+            onPress={() => navigation.navigate('Clip', { title: item.title})}
+        >
             <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
             <Text style={styles.title}>{item.title}</Text>
         </TouchableOpacity>
@@ -27,10 +22,11 @@ const DJLibraryScreen = ({ navigation }) => {
         <View style={styles.container}>
             <Text style={styles.header}>Your DJ Library</Text>
             <FlatList
-            data={sampleLibrary}
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-            ListEmptyComponent={<Text style={styles.empty}>No DJ sets saved yet</Text>}
+                data={djLibrary}
+                keyExtractor={(item) => item.id}
+                renderItem={renderItem}
+                ListEmptyComponent={<Text style={styles.empty}>No DJ sets saved yet.</Text>
+            }
             />
         </View>
     );
