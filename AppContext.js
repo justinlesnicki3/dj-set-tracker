@@ -14,7 +14,8 @@ export const AppProvider = ({children}) => {
         });
     };
 
-    const [djLibrary, setDjLibrary, myLeaks, setMyLeaks] = useState([]);
+    const [djLibrary, setDjLibrary] = useState([]);
+    const [myLeaks, setMyLeaks] = useState([]);
 
     const addSetToLibrary = (set) => {
         setDjLibrary((prev) => {
