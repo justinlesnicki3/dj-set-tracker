@@ -10,8 +10,9 @@ const HomeScreen = () => {
     const [djName, setDjName] = useState('');
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const navigation = useNavigation();
-    const { addTrackedDJ, trackedDJs, addSetToLibrary } = useAppContext();
+    const { addTrackedDJ, trackedDJs, addSetToLibrary, refreshTrackedDJs } = useAppContext();
 
     const searchDJ = async () => {
         setLoading(true);
@@ -67,6 +68,13 @@ console.log("HomeScreen rendered");
             )}
             <View style={{marginVertical: 10}}>
                 <CustomButton title='Go to Library' onPress={() => navigation.navigate('Library')} />
+                <CustomButton title={refreshing ? 'Refreshing...' : 'Refresh Tracked DJs'}
+                onPress={async () => {
+                    setRefreshing(true);
+                    await refreshTrackedDJs();
+                    setRefreshing(false);
+                }}
+            />
                 <CustomButton title='Go to my Leaks' onPress={() => navigation.navigate('MyLeaks')} />
             </View>
             {loading ? (

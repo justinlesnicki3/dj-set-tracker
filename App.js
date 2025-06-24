@@ -1,29 +1,24 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import HomeScreen from './screens/HomeScreen';
-import DJLibraryScreen from './screens/DJLibraryScreen';
-import MyLeaksScreen from './screens/MyLeaksScreen';
 import { AppProvider } from './AppContext';
-import ClipScreen from './screens/ClipScreen';
+import SearchScreen from './screens/SearchScreen';
+import MyDJsScreen from './screens/MyDJsScreen';
+import NewSetsScreen from './screens/NewSetsScreen';
 
-const Stack = createNativeStackNavigator();
-console.log("App loaded");
-
+const Tab = createBottomTabNavigator();
 
 export default function App() {
   return (
     <AppProvider>
       <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Library" component={DJLibraryScreen} />
-        <Stack.Screen name="MyLeaks" component={MyLeaksScreen} />
-        <Stack.Screen name="Clip" component={ClipScreen} />
-      </Stack.Navigator>
+        <Tab.Navigator initialRouteName='Search'>
+          <Tab.Screen name="Search" component={SearchScreen} />
+          <Tab.Screen name="My DJs" component={MyDJsScreen} />
+          <Tab.Screen name="New Sets" component={NewSetsScreen} />
+        </Tab.Navigator>
       </NavigationContainer>
     </AppProvider>
-
   );
 }

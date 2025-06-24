@@ -10,8 +10,9 @@ const MyLeaksScreen = () => {
     const renderLeak = ({ item }) => (
         <TouchableOpacity style={styles.leakItem} onPress={() => {/* Play clip or show details */}}>
             <Text style={styles.leakTitle}>{item.title}</Text>
-            <Text style={styles.leakInfo}>{`${item.start} - ${item.end}`}</Text>
-
+            <Text style={styles.leakInfo}>
+                {item.djSetTitle} | {item.start} - {item.end}
+            </Text>
         </TouchableOpacity>
     );
 

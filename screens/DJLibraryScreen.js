@@ -11,7 +11,10 @@ const DJLibraryScreen = ({ navigation }) => {
     const renderItem = ({item}) => (
         <TouchableOpacity
             style={styles.item}
-            onPress={() => navigation.navigate('Clip', { title: item.title})}
+            onPress={() => navigation.navigate('Clip', {
+                title: item.title,
+                videoId: item.videoId
+            })}
         >
             <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
             <Text style={styles.title}>{item.title}</Text>
