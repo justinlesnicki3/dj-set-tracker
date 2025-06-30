@@ -6,10 +6,19 @@ const API_KEY = YOUTUBE_API_KEY;
 const SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search';
 const  VIDEO_DETAILS_URL = 'https://www.googleapis.com/youtube/v3/videos';
 
-export const searchDJSets = async (djName) => {
+export const searchDJSets = async (djName, options = {}) => {
+
+    const {signal} = options;
+
+    if (!API_KEY) {
+        console.error("❌ YOUTUBE_API_KEY is missing");
+        return [];
+    }
+
     try {
-        //1. Search for videos with DJ's Name
+        
         const searchResponse = await axios.get(SEARCH_URL, {
+            signal,
             params: {
                 part: 'snippet',
                 q: djName,
@@ -20,9 +29,15 @@ export const searchDJSets = async (djName) => {
         });
 
         const videoItems = searchResponse.data.items;
-        const videoIds = videoItems.map(item => item.id.videoId).join(',');
+        const videoIds = videoItems
+        .map(item => item.id.videoId)
+        .filter(id => id)
+        .join(',');
+
+        if(!videoIds) return [];
 
         const detailsResponse = await axios.get(VIDEO_DETAILS_URL, {
+            signal,
             params: {
                 part: 'contentDetails,snippet',
                 id: videoIds,
@@ -41,10 +56,15 @@ export const searchDJSets = async (djName) => {
             title: video.snippet.title,
             videoId: video.id,
             thumbnail: video.snippet.thumbnails.high.url,
+            publishDate: video.snippet.publishedAt,
         }));
 
     } catch (error) {
-        console.error('YouTube API error:', error.response?.data || error.message);
+        if (axios.isCancel(error)) {
+            console.warn('❌ YouTube API request was aborted');
+        } else {
+            console.error('YouTube API error:', error.response?.data || error.message);
+        }
         return [];
     }
 };

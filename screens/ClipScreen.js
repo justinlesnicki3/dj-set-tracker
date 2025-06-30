@@ -1,70 +1,73 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { WebView } from 'react-native-webview';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
-import YoutubePlayer from "react-native-youtube-iframe";
-import { useRef } from 'react';
 
-
-const ClipScreen = ({ route, navigation }) => {
+const ClipScreen = () => {
+    const route = useRoute();
+    const navigation = useNavigation();
     const { title, videoId } = route.params;
-    const playerRef = useRef();
-    const [start, setStart] = useState('');
-
-    const [end, setEnd] = useState('');
     const { addLeak } = useAppContext();
+
+    const [start, setStart] = useState('');
+    const [end, setEnd] = useState('');
+
+    const handleSaveLeak = () => {
+        if (!start || !end) {
+            Alert.alert('Error', 'Start and End times are required');
+            return;
+        }
+
+        const leak = {
+            id: `${videoId}-${start}-${end}`,
+            title: `${title} (Clip)`,
+            djSetTitle: title,
+            videoId,
+            start,
+            end,
+        };
+
+        addLeak(leak);
+        Alert.alert('Saved', 'Clip saved to My Leaks');
+        navigation.goBack();
+    };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Clipping from: {title}</Text>
-            <YoutubePlayer ref={playerRef} height={200} play={false} videoId={videoId} />
-            <TextInput placeholder='Start Time (e.g. 3:24)' value={start} onChangeText={setStart} style={styles.input} />
-            <TextInput placeholder='End Time (e.g. 5:36)' value={end} onChangeText={setEnd} style={styles.input} />
-            <Button
-                title="Set Start"
-                onPress={async () => {
-                    const currentTime = await playerRef.current?.getCurrentTime();
-                    setStart(formatTime(currentTime));
-                }} 
+            <Text style={styles.title}>{title}</Text>
+            <WebView
+                source={{ uri: `https://www.youtube.com/embed/${videoId}` }}
+                style={styles.video}
             />
-
-            <Button
-                title="Set End"
-                onPress={async () => {
-                    const currentTime = await playerRef.current?.getCurrentTime();
-                    setEnd(formatTime(currentTime));
-                }}
-            />               
-
-            <Button title="Save to My Leaks" onPress={() => {
-                addLeak({
-                    id: Date.now().toString(),
-                    djSetTitle: title,
-                    start,
-                    end
-                });
-                navigation.goBack();
-            }} 
-        />
+            <TextInput
+                style={styles.input}
+                placeholder="Start time (e.g. 3:24)"
+                value={start}
+                onChangeText={setStart}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="End time (e.g. 5:36)"
+                value={end}
+                onChangeText={setEnd}
+            />
+            <Button title="Save Clip" onPress={handleSaveLeak} />
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {padding: 20},
-    title: {fontSize: 20, fontWeight: 'bold', marginBottom: 20},
+    container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+    title: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
+    video: { height: 200, marginBottom: 20 },
     input: {
-        borderWidth: 1,
         borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 6,
         padding: 10,
         marginBottom: 10,
-        borderRadius: 6,
     },
 });
-
-const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-};
 
 export default ClipScreen;

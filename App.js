@@ -13,7 +13,7 @@ export default function App() {
   return (
     <AppProvider>
       <NavigationContainer>
-        <Tab.Navigator initialRouteName='Search'>
+        <Tab.Navigator initialRouteName="Search">
           <Tab.Screen name="Search" component={SearchScreen} />
           <Tab.Screen name="My DJs" component={MyDJsScreen} />
           <Tab.Screen name="New Sets" component={NewSetsScreen} />
