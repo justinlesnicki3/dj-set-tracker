@@ -1,16 +1,21 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { useAppContext } from '../AppContext';
+import { useNavigation } from '@react-navigation/native';
 
 const MyDJsScreen = () => {
     const { trackedDJs } = useAppContext();
+    const navigation = useNavigation();
 
     const renderDJ = ({ item }) => (
-        <View style={styles.djItem}>
-            <Text style={styles.djName}>{item.name}</Text>
-            <Text style={styles.djDate}>Subscribed: {new Date(item.subscribeDate).toLocaleDateString()}</Text>
-        </View>
-    );
+    <TouchableOpacity
+        style={styles.djItem}
+        onPress={() => navigation.navigate('DJDetail', { djName: item.name })}
+    >
+        <Text style={styles.djName}>{item.name}</Text>
+        <Text style={styles.djDate}>Subscribed: {new Date(item.subscribeDate).toLocaleDateString()}</Text>
+    </TouchableOpacity>
+);
 
     return (
         <View style={styles.container}>
