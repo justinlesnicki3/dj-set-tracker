@@ -10,6 +10,8 @@ export const AppProvider = ({ children }) => {
     const [myLeaks, setMyLeaks] = useState([]);
     const [newSets, setNewSets] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [savedSets, setSavedSets] = useState([]);
+    const [hasInitialized, setHasInitialized] = useState(false);
 
     const addTrackedDJ = (dj) => {
         if (!dj || !dj.name) return;
@@ -18,6 +20,17 @@ export const AppProvider = ({ children }) => {
             if (prev.some((d) => d.name === cleanName)) return prev;
             return [...prev, { ...dj, name: cleanName, subscribeDate: new Date().toISOString() }];
         });
+    };
+
+    const addSavedSet = (set) => {
+        setSavedSets((prev) => {
+            if (prev.some((s) => s.id === set.id)) return prev;
+            return [...prev, set];
+        });
+    };
+
+    const removeSavedSet = (setId) => {
+        setSavedSets((prev) => prev.filter((s) => s.id !== setId));
     };
 
     const addSetToLibrary = (set) => {
@@ -41,17 +54,21 @@ export const AppProvider = ({ children }) => {
                 clearTimeout(timeout);
 
                 for (const set of results) {
-                    const publishDate = set.publishDate;
-                    const isNew = new Date(publishDate) > new Date(dj.subscribeDate);
-                    if (isNew) {
-                        setNewSets((prev) =>
-                            prev.some((s) => s.id === set.id) ? prev : [...prev, { ...set, djName: dj.name }]
-                        );
-                        setDjLibrary((prev) =>
-                            prev.some((s) => s.id === set.id) ? prev : [...prev, set]
-                        );
-                    }
-                }
+                    const fullSet = { ...set, djName: dj.name.toLowerCase() };
+
+                // Save all sets, not just "new"
+                setDjLibrary(prev =>
+                    prev.some(s => s.id === fullSet.id) ? prev : [...prev, fullSet]
+                );
+
+                // Still track new sets separately if needed
+                const isNew = new Date(set.publishDate) > new Date(dj.subscribeDate);
+                if (isNew) {
+                    setNewSets(prev =>
+                        prev.some(s => s.id === fullSet.id) ? prev : [...prev, fullSet]
+        );
+    }
+}
             } catch (err) {
                 console.warn(`⚠️ Failed to fetch for ${dj.name}:`, err.message || err);
             }
@@ -64,6 +81,8 @@ export const AppProvider = ({ children }) => {
                 const libraryData = await AsyncStorage.getItem('djLibrary');
                 const leaksData = await AsyncStorage.getItem('myLeaks');
                 const trackedData = await AsyncStorage.getItem('trackedDJs');
+                const saved = await AsyncStorage.getItem('savedSets');
+
 
                 if (libraryData) setDjLibrary(JSON.parse(libraryData));
                 if (leaksData) setMyLeaks(JSON.parse(leaksData));
@@ -71,15 +90,15 @@ export const AppProvider = ({ children }) => {
                     const parsed = JSON.parse(trackedData);
                     setTrackedDJs(parsed);
 
-                    // 🟡 Comment this out temporarily if you're stuck in a load loop
-                    // if (parsed.length > 0) {
-                    //     await refreshTrackedDJs(parsed);
-                    // }
+                    setTimeout(() => refreshTrackedDJs(parsed), 1000);
                 }
+                if (saved) setSavedSets(JSON.parse(saved));
+
             } catch (e) {
                 console.error("❌ Error during init:", e.message || e);
             } finally {
                 setLoading(false);
+                setHasInitialized(true);
             }
         };
 
@@ -87,16 +106,28 @@ export const AppProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        AsyncStorage.setItem('trackedDJs', JSON.stringify(trackedDJs));
+        if (hasInitialized) {
+            AsyncStorage.setItem('trackedDJs', JSON.stringify(trackedDJs));
+        }
     }, [trackedDJs]);
 
     useEffect(() => {
-        AsyncStorage.setItem('djLibrary', JSON.stringify(djLibrary));
+        if (hasInitialized) {
+            AsyncStorage.setItem('djLibrary', JSON.stringify(djLibrary));
+        }
     }, [djLibrary]);
 
     useEffect(() => {
-        AsyncStorage.setItem('myLeaks', JSON.stringify(myLeaks));
+        if (hasInitialized) {
+            AsyncStorage.setItem('myLeaks', JSON.stringify(myLeaks));
+        }
     }, [myLeaks]);
+
+    useEffect(() => {
+        if (hasInitialized) {
+            AsyncStorage.setItem('savedSets', JSON.stringify(savedSets));
+        }
+    }, [savedSets]);
 
     return (
         <AppContext.Provider
@@ -110,6 +141,9 @@ export const AppProvider = ({ children }) => {
                 refreshTrackedDJs,
                 newSets,
                 loading,
+                savedSets,
+                addSavedSet,
+                removeSavedSet,
             }}
         >
             {children}

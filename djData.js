@@ -2,6 +2,7 @@ import discoLinesImg from './assets/images/discolines.jpg';
 import fisherImg from './assets/images/fisher.jpg';
 import oddmobImg from './assets/images/oddmob.jpg';
 import vintagecultureImg from './assets/images/vintageculture.jpg';
+import riordanImg from './assets/images/riordan.jpg';
 
 export const DJ_DATABASE = [
     {
@@ -27,5 +28,12 @@ export const DJ_DATABASE = [
         name: 'Disco Lines',
         image: discoLinesImg,
         youtubeQuery: 'Disco Lines',
+    },
+
+    {
+        id: 'Riordan',
+        name: 'Riordan',
+        image: riordanImg,
+        youtubeQuery: 'Riordan',
     },
 ];

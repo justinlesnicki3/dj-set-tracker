@@ -7,6 +7,7 @@ import { AppProvider } from './AppContext';
 import SearchScreen from './screens/SearchScreen';
 import MyDJsScreen from './screens/MyDJsScreen';
 import NewSetsScreen from './screens/NewSetsScreen';
+import DJDetailScreen from './screens/DJDetailScreen';
 import DJLibraryScreen from './screens/DJLibraryScreen';
 import MyLeaksScreen from './screens/MyLeaksScreen';
 import ClipScreen from './screens/ClipScreen';
@@ -21,6 +22,8 @@ function MainTabs() {
       <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="My DJs" component={MyDJsScreen} />
       <Tab.Screen name="New Sets" component={NewSetsScreen} />
+      <Tab.Screen name="My Leaks" component={MyLeaksScreen} />
+      <Tab.Screen name="Libaray" component={DJLibraryScreen} />
     </Tab.Navigator>
   );
 }
@@ -32,6 +35,7 @@ export default function App() {
         <Stack.Navigator>
           <Stack.Screen name="Home" component={MainTabs} options={{ headerShown: false }} />
           <Stack.Screen name="DJDetail" component={DJDetailScreen} />
+          <Stack.Screen name="Clip" component={ClipScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </AppProvider>
