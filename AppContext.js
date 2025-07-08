@@ -11,6 +11,7 @@ export const AppProvider = ({ children }) => {
     const [newSets, setNewSets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [savedSets, setSavedSets] = useState([]);
+    const [playlists, setPlaylists] = useState([]);
     const [hasInitialized, setHasInitialized] = useState(false);
 
     const addTrackedDJ = (dj) => {
@@ -42,6 +43,27 @@ export const AppProvider = ({ children }) => {
 
     const addLeak = (leak) => {
         setMyLeaks((prev) => [...prev, leak]);
+    };
+
+    const addPlaylist = (name) => {
+        const clean = name.trim().toLowerCase();
+        setPlaylists(prev => {
+        if (prev.some(p => p.name.toLowerCase() === clean)) return prev;
+        return [...prev, { name, clips: [] }];
+    });
+};
+
+
+    const addClipToPlaylist = (playlistName, clip) => {
+        setPlaylists(prev =>
+            prev.map(p => {
+                if (p.name === playlistName) {
+                    if (p.clips.some(c => c.id === clip.id)) return p;
+                    return {...p, clips: [...p.clips, clip]};
+                }
+                return p;
+            })
+        );
     };
 
     const refreshTrackedDJs = async (djList) => {
@@ -76,34 +98,39 @@ export const AppProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        const init = async () => {
-            try {
-                const libraryData = await AsyncStorage.getItem('djLibrary');
-                const leaksData = await AsyncStorage.getItem('myLeaks');
-                const trackedData = await AsyncStorage.getItem('trackedDJs');
-                const saved = await AsyncStorage.getItem('savedSets');
+    const init = async () => {
+        try {
+            const libraryData = await AsyncStorage.getItem('djLibrary');
+            const leaksData = await AsyncStorage.getItem('myLeaks');
+            const trackedData = await AsyncStorage.getItem('trackedDJs');
+            const saved = await AsyncStorage.getItem('savedSets');
+            const playlistData = await AsyncStorage.getItem('playlists');
 
+            if (playlistData) setPlaylists(JSON.parse(playlistData));
+            if (libraryData) setDjLibrary(JSON.parse(libraryData));
+            if (leaksData) setMyLeaks(JSON.parse(leaksData));
+            if (trackedData) {
+                const parsed = JSON.parse(trackedData);
+                setTrackedDJs(parsed);
 
-                if (libraryData) setDjLibrary(JSON.parse(libraryData));
-                if (leaksData) setMyLeaks(JSON.parse(leaksData));
-                if (trackedData) {
-                    const parsed = JSON.parse(trackedData);
-                    setTrackedDJs(parsed);
-
-                    setTimeout(() => refreshTrackedDJs(parsed), 1000);
-                }
-                if (saved) setSavedSets(JSON.parse(saved));
-
-            } catch (e) {
-                console.error("❌ Error during init:", e.message || e);
-            } finally {
-                setLoading(false);
-                setHasInitialized(true);
+                // 👇 Ensure this promise doesn't block app forever
+                refreshTrackedDJs(parsed)
+                  .catch(err => console.warn('Error refreshing tracked DJs:', err));
             }
-        };
 
-        init();
-    }, []);
+            if (saved) setSavedSets(JSON.parse(saved));
+
+        } catch (e) {
+            console.error("❌ Error during init:", e.message || e);
+        } finally {
+            setLoading(false); // ✅ This always runs even if something fails
+            setHasInitialized(true);
+        }
+    };
+
+    init();
+}, []);
+
 
     useEffect(() => {
         if (hasInitialized) {
@@ -129,6 +156,12 @@ export const AppProvider = ({ children }) => {
         }
     }, [savedSets]);
 
+    useEffect(() => {
+        if (hasInitialized) {
+            AsyncStorage.setItem('playlists', JSON.stringify(playlists));
+        }
+    }, [playlists]);
+
     return (
         <AppContext.Provider
             value={{
@@ -144,6 +177,9 @@ export const AppProvider = ({ children }) => {
                 savedSets,
                 addSavedSet,
                 removeSavedSet,
+                playlists,
+                addPlaylist,
+                addClipToPlaylist,
             }}
         >
             {children}
