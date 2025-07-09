@@ -1,42 +1,50 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 
-
 const MyLeaksScreen = () => {
+  const { playlists } = useAppContext();
+  const navigation = useNavigation();
 
-    const {myLeaks} = useAppContext();
+  const renderPlaylist = ({ item }) => (
+    <TouchableOpacity
+      style={styles.playlistItem}
+      onPress={() => navigation.navigate('PlaylistDetail', { playlistName: item.name })}
+    >
+      <Text style={styles.playlistName}>{item.name}</Text>
+      <Text style={styles.count}>{item.clips.length} clip(s)</Text>
+    </TouchableOpacity>
+  );
 
-    const renderLeak = ({ item }) => (
-        <TouchableOpacity style={styles.leakItem} onPress={() => {/* Play clip or show details */}}>
-            <Text style={styles.leakTitle}>{item.title}</Text>
-            <Text style={styles.leakInfo}>
-                {item.djSetTitle} | {item.start} - {item.end}
-            </Text>
-        </TouchableOpacity>
-    );
-
-    return (
-        <View style={styles.container}>
-            <Text style={styles.header}>My Leaks</Text>
-            <FlatList
-            data={myLeaks}
-            keyExtractor={(item) => item.id}
-            renderItem={renderLeak}
-            ListEmptyComponent={<Text style={styles.empty}>No leaks saved yet</Text>}
-            />
-        </View>
-    );
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>My Playlists</Text>
+      {playlists.length === 0 ? (
+        <Text style={styles.empty}>No playlists yet. Create one by saving a clip.</Text>
+      ) : (
+        <FlatList
+          data={playlists}
+          keyExtractor={(item) => item.name}
+          renderItem={renderPlaylist}
+        />
+      )}
+    </View>
+  );
 };
-
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
   header: { fontSize: 24, fontWeight: 'bold', marginBottom: 15 },
-  leakItem: { padding: 15, backgroundColor: '#f2f2f2', borderRadius: 8, marginBottom: 12 },
-  leakTitle: { fontSize: 18, fontWeight: '600' },
-  leakInfo: { fontSize: 14, color: '#666', marginTop: 4 },
-  empty: { textAlign: 'center', marginTop: 50, color: '#888' },
+  playlistItem: {
+    padding: 15,
+    backgroundColor: '#f2f2f2',
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  playlistName: { fontSize: 18, fontWeight: 'bold' },
+  count: { fontSize: 14, color: '#666', marginTop: 5 },
+  empty: { marginTop: 40, textAlign: 'center', color: '#999' },
 });
 
 export default MyLeaksScreen;
