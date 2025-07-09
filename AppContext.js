@@ -23,6 +23,21 @@ export const AppProvider = ({ children }) => {
         });
     };
 
+    const removeClipFromPlaylist = (playlistName, clipId) => {
+        setPlaylists(prev =>
+        prev.map(p => {
+      if (p.name === playlistName) {
+        return {
+          ...p,
+          clips: p.clips.filter(c => c.id !== clipId),
+        };
+      }
+      return p;
+    })
+  );
+};
+
+
     const addSavedSet = (set) => {
         setSavedSets((prev) => {
             if (prev.some((s) => s.id === set.id)) return prev;
@@ -180,6 +195,7 @@ export const AppProvider = ({ children }) => {
                 playlists,
                 addPlaylist,
                 addClipToPlaylist,
+                removeClipFromPlaylist,
             }}
         >
             {children}

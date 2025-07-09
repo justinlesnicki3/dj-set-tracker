@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Button, Alert } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import React, { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Button,
+  Alert,
+} from 'react-native';
+import {
+  useRoute,
+  useNavigation,
+  useFocusEffect,
+} from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
-import { useNavigation } from '@react-navigation/native';
 
 const PlaylistDetailScreen = () => {
   const { playlists } = useAppContext();
@@ -10,8 +21,15 @@ const PlaylistDetailScreen = () => {
   const navigation = useNavigation();
   const { playlistName } = route.params;
 
-  const playlist = playlists.find(p => p.name === playlistName);
+  const [playlist, setPlaylist] = useState(null);
   const [shuffled, setShuffled] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      const latest = playlists.find((p) => p.name === playlistName);
+      setPlaylist(latest);
+    }, [playlists, playlistName])
+  );
 
   const playClips = (clips) => {
     if (clips.length === 0) {
@@ -19,10 +37,10 @@ const PlaylistDetailScreen = () => {
       return;
     }
 
-    // Example: Navigate to first clip in list
     navigation.navigate('ClipPlayer', {
-      clips: clips,
+      clips,
       startIndex: 0,
+      playlistName,
     });
   };
 
@@ -36,6 +54,15 @@ const PlaylistDetailScreen = () => {
     const shuffledClips = [...playlist.clips].sort(() => Math.random() - 0.5);
     playClips(shuffledClips);
   };
+
+  if (!playlist) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.header}>Playlist not found</Text>
+        <Text style={styles.empty}>This playlist may have been deleted.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -55,7 +82,8 @@ const PlaylistDetailScreen = () => {
             onPress={() =>
               navigation.navigate('ClipPlayer', {
                 clips: playlist.clips,
-                startIndex: playlist.clips.findIndex(c => c.id === item.id),
+                startIndex: playlist.clips.findIndex((c) => c.id === item.id),
+                playlistName,
               })
             }
           >
@@ -86,6 +114,7 @@ const styles = StyleSheet.create({
   },
   clipTitle: { fontSize: 16, fontWeight: '500' },
   clipTime: { fontSize: 14, color: '#666' },
+  empty: { fontSize: 14, color: '#999', marginTop: 10, textAlign: 'center' },
 });
 
 export default PlaylistDetailScreen;

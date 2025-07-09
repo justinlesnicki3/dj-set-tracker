@@ -1,15 +1,25 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { WebView } from 'react-native-webview';
+import { useAppContext } from '../AppContext';
 
 const ClipPlayerScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { clips, startIndex = 0 } = route.params;
+  const { clips, startIndex = 0, playlistName } = route.params;
 
   const [currentIndex, setCurrentIndex] = useState(startIndex);
   const currentClip = clips[currentIndex];
+
+  const { removeClipFromPlaylist } = useAppContext();
+
+  const handleDelete = () => {
+    removeClipFromPlaylist(playlistName, currentClip.id);
+    Alert.alert('Deleted', 'Clip has been removed from the playlist');
+    navigation.goBack();
+  };
+
 
   const goNext = () => {
     if (currentIndex < clips.length - 1) {
@@ -30,6 +40,7 @@ const ClipPlayerScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{currentClip.title}</Text>
+      <Text style={styles.djSetTitle}>From: {currentClip.djSetTitle}</Text>
       <Text style={styles.timestamp}>From {currentClip.start} to {currentClip.end}</Text>
 
       <WebView
@@ -40,10 +51,21 @@ const ClipPlayerScreen = () => {
         allowsFullscreenVideo
       />
 
-      <View style={styles.buttonRow}>
-        <Button title="Previous" onPress={goBack} />
-        <Button title="Next" onPress={goNext} />
-      </View>
+    <View style={styles.buttonRow}>
+        <TouchableOpacity style={styles.button} onPress={goBack}>
+    <Text style={styles.buttonText}>Previous</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+            style={[styles.button, { backgroundColor: '#d9534f', marginTop: 20 }]}
+            onPress={handleDelete}
+        >
+        <Text style={styles.buttonText}>Delete Clip</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={goNext}>
+    <Text style={styles.buttonText}>Next</Text>
+        </TouchableOpacity>
+    </View>
     </View>
   );
 };
@@ -54,15 +76,61 @@ const parseTime = (timestamp) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  title: { fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
-  timestamp: { fontSize: 14, marginBottom: 10, color: '#666' },
-  video: { height: 200, marginBottom: 20 },
+  container: {
+    flex: 1,
+    backgroundColor: '#f9f9f9',
+    padding: 20,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 10,
+    color: '#222',
+  },
+  timestamp: {
+    alignSelf: 'center',
+    backgroundColor: '#e0e0e0',
+    color: '#444',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  video: {
+    height: 220,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 24,
+  },
   buttonRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 30,
+    justifyContent: 'space-evenly',
+    marginTop: 'auto',
   },
+  button: {
+    backgroundColor: '#33498e',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  djSetTitle: {
+  textAlign: 'center',
+  fontSize: 14,
+  color: '#666',
+  marginBottom: 8,
+},
 });
 
 export default ClipPlayerScreen;
