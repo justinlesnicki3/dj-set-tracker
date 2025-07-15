@@ -13,6 +13,7 @@ const ClipScreen = () => {
 
     const [start, setStart] = useState('');
     const [end, setEnd] = useState('');
+    const [clipTitle, setClipTitle] = useState(''); // ✅ New custom title field
     const [newPlaylistName, setNewPlaylistName] = useState('');
     const [selectedPlaylist, setSelectedPlaylist] = useState('');
 
@@ -22,9 +23,11 @@ const ClipScreen = () => {
             return;
         }
 
+        const userTitle = clipTitle.trim() || `${title} (Clip)`;
+
         const leak = {
             id: `${videoId}-${start}-${end}`,
-            title: `${title} (Clip)`,
+            title: userTitle,
             djSetTitle: title,
             videoId,
             start,
@@ -35,21 +38,27 @@ const ClipScreen = () => {
 
         const playlistName = newPlaylistName.trim() || selectedPlaylist;
         if (playlistName) {
-            if(!playlists.some(p => p.name === playlistName)) {
+            if (!playlists.some(p => p.name === playlistName)) {
                 addPlaylist(playlistName);
             }
             addClipToPlaylist(playlistName, leak);
         }
 
-        Alert.alert('Saved', `Clip saved${playlistName ?  ` to "${playlistName}"` : ''}`);
+        Alert.alert('Saved', `Clip saved${playlistName ? ` to "${playlistName}"` : ''}`);
         navigation.goBack();
-
     };
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>{title}</Text>
             <WebView source={{ uri: `https://www.youtube.com/embed/${videoId}` }} style={styles.video} />
+
+            <TextInput
+                style={styles.input}
+                placeholder="Title for this clip (e.g. Song name)"
+                value={clipTitle}
+                onChangeText={setClipTitle}
+            />
 
             <TextInput
                 style={styles.input}
@@ -75,19 +84,19 @@ const ClipScreen = () => {
 
             {playlists.length > 0 && (
                 <>
-                <Text style={styles.or}>OR select existing:</Text>
-                <Picker
-                    selectedValue={selectedPlaylist}
-                    onValueChange={(itemValue) => setSelectedPlaylist(itemValue)}
-                    style={styles.picker}
-                >
-                    <Picker.Item label="Select a playlist..." value="" />
-                    {playlists.map((p) => (
-                        <Picker.Item key={p.name} label={p.name} value={p.name} />
-                    ))}
-                </Picker>
-            </>
-        )}
+                    <Text style={styles.or}>OR select existing:</Text>
+                    <Picker
+                        selectedValue={selectedPlaylist}
+                        onValueChange={(itemValue) => setSelectedPlaylist(itemValue)}
+                        style={styles.picker}
+                    >
+                        <Picker.Item label="Select a playlist..." value="" />
+                        {playlists.map((p) => (
+                            <Picker.Item key={p.name} label={p.name} value={p.name} />
+                        ))}
+                    </Picker>
+                </>
+            )}
 
             <Button title="Save Clip" onPress={handleSaveLeak} />
         </View>
@@ -95,32 +104,32 @@ const ClipScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
-  video: { height: 200, marginBottom: 20 },
-  input: {
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 10,
-  },
-  subHeader: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginTop: 20,
-    marginBottom: 8,
-  },
-  or: {
-    textAlign: 'center',
-    marginVertical: 10,
-    color: '#888',
-  },
-  picker: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    marginBottom: 20,
-  },
+    container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+    title: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
+    video: { height: 200, marginBottom: 20 },
+    input: {
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 6,
+        padding: 10,
+        marginBottom: 10,
+    },
+    subHeader: {
+        fontSize: 16,
+        fontWeight: '600',
+        marginTop: 20,
+        marginBottom: 8,
+    },
+    or: {
+        textAlign: 'center',
+        marginVertical: 10,
+        color: '#888',
+    },
+    picker: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        marginBottom: 20,
+    },
 });
 
 export default ClipScreen;
