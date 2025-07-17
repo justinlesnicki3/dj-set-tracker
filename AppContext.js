@@ -12,6 +12,8 @@ export const AppProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [savedSets, setSavedSets] = useState([]);
     const [playlists, setPlaylists] = useState([]);
+    const [currentClip, setCurrentClip] = useState(null);
+    const [isPlaying, setIsPlaying] = useState(false);
     const [hasInitialized, setHasInitialized] = useState(false);
 
     const addTrackedDJ = (dj) => {
@@ -196,6 +198,10 @@ export const AppProvider = ({ children }) => {
                 addPlaylist,
                 addClipToPlaylist,
                 removeClipFromPlaylist,
+                currentClip,
+                setCurrentClip,
+                isPlaying,
+                setIsPlaying,
             }}
         >
             {children}

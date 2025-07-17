@@ -13,7 +13,7 @@ import DJLibraryScreen from './screens/DJLibraryScreen';
 import MyLeaksScreen from './screens/MyLeaksScreen';
 import ClipScreen from './screens/ClipScreen';
 import ClipPlayerScreen from './screens/ClipPlayerScreen';
-
+import MiniPlayer from './components/MiniPlayer';
 
 
 const Tab = createBottomTabNavigator();
@@ -34,15 +34,19 @@ function MainTabs() {
 export default function App() {
   return (
     <AppProvider>
-      <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen name="Home" component={MainTabs} options={{ headerShown: false }} />
-          <Stack.Screen name="DJDetail" component={DJDetailScreen} />
-          <Stack.Screen name="Clip" component={ClipScreen} />
-          <Stack.Screen name="PlaylistDetail" component={PlaylistDetailScreen} />
-          <Stack.Screen name="ClipPlayer" component={ClipPlayerScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </AppProvider>
+  <NavigationContainer>
+    <>
+      <Stack.Navigator>
+        <Stack.Screen name="Home" component={MainTabs} options={{ headerShown: false }} />
+        <Stack.Screen name="DJDetail" component={DJDetailScreen} />
+        <Stack.Screen name="Clip" component={ClipScreen} />
+        <Stack.Screen name="PlaylistDetail" component={PlaylistDetailScreen} />
+        <Stack.Screen name="ClipPlayer" component={ClipPlayerScreen} />
+      </Stack.Navigator>
+      <MiniPlayer />
+    </>
+  </NavigationContainer>
+</AppProvider>
+
   );
 }
