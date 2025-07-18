@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { AppContext } from '../AppContext';
-import { AntDesign } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -37,7 +36,7 @@ const MiniPlayer = () => {
         </Text>
         <Text style={styles.timestamp}>{currentClip.start} - {currentClip.end}</Text>
       </View>
-      <AntDesign name={isPlaying ? 'pausecircle' : 'playcircleo'} size={24} color="white" style={styles.icon} />
+      <Text style={{ color: '#fff', fontSize: 20 }}>{isPlaying ? '⏸️' : '▶️'}</Text>
     </TouchableOpacity>
   );
 };

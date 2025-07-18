@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { searchDJSets } from './services/youtube';
 
-const AppContext = createContext();
+export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
     const [trackedDJs, setTrackedDJs] = useState([]);
