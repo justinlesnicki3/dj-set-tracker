@@ -3,7 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import PlaylistDetailScreen from './screens/PlaylistDetailScreen';
-
+import { Ionicons } from '@expo/vector-icons';
+ 
 import { AppProvider } from './AppContext';
 import SearchScreen from './screens/SearchScreen';
 import MyDJsScreen from './screens/MyDJsScreen';
@@ -21,7 +22,38 @@ const Stack = createNativeStackNavigator();
 
 function MainTabs() {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          switch (route.name) {
+            case 'Search':
+              iconName = focused ? 'search' : 'search-outline';
+              break;
+            case 'My DJs':
+              iconName = focused ? 'heart' : 'heart-outline';
+              break;
+            case 'New Sets':
+              iconName = focused ? 'musical-notes' : 'musical-notes-outline';
+              break;
+            case 'My Leaks':
+              iconName = focused ? 'albums' : 'albums-outline';
+              break;
+            case 'Libaray':
+              iconName = focused ? 'library' : 'library-outline';
+              break;
+            default:
+              iconName = 'help-circle-outline';
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#33498e',
+        tabBarInactiveTintColor: 'gray',
+        headerShown: false,
+      })}
+    >
       <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="My DJs" component={MyDJsScreen} />
       <Tab.Screen name="New Sets" component={NewSetsScreen} />
@@ -30,6 +62,7 @@ function MainTabs() {
     </Tab.Navigator>
   );
 }
+
 
 export default function App() {
   return (

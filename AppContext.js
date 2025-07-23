@@ -39,6 +39,10 @@ export const AppProvider = ({ children }) => {
   );
 };
 
+  const removeTrackedDJ = (djName) => {
+  const clean = djName.trim().toLowerCase();
+  setTrackedDJs(prev => prev.filter(dj => dj.name !== clean));
+};
 
     const addSavedSet = (set) => {
         setSavedSets((prev) => {
@@ -184,6 +188,7 @@ export const AppProvider = ({ children }) => {
             value={{
                 trackedDJs,
                 addTrackedDJ,
+                removeTrackedDJ,
                 djLibrary,
                 addSetToLibrary,
                 myLeaks,
