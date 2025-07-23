@@ -45,11 +45,26 @@ export const searchDJSets = async (djName, options = {}) => {
             },
         });
 
+        const blacklist = ['interview', 'reaction', 'review', 'recap', 'trailer', 'announcement', 'podcast', 'Episode'];
+        const setKeywords = ['live set', 'dj set', 'boiler room', 'mixmag', 'essential mix', 'full set', 'stream', 'festival', 'club', 'LIVE', '@'];
+
+        const isLikelySet = (title, channelTitle) => {
+            const lowerTitle = title.toLowerCase();
+            const hasDJName = new RegExp(`\\b${djName.toLowerCase()}\\b`).test(lowerTitle);
+            const hasSetKeyword = setKeywords.some(k => lowerTitle.includes(k));
+            const hasBlacklisted = blacklist.some(b => lowerTitle.includes(b));
+
+        return hasDJName && hasSetKeyword && !hasBlacklisted;
+    };
+
         const longSets = detailsResponse.data.items.filter(video => {
             const duration = parseISO8601Duration(video.contentDetails.duration);
-            const title = video.snippet.title.toLowerCase();
-            return duration >= 50 && title.includes(djName.toLowerCase());
-        });
+            const title = video.snippet.title;
+            const channel = video.snippet.channelTitle;
+
+        return duration >= 55 && isLikelySet(title, channel);
+    });
+
 
         return longSets.map(video => ({
             id: video.id,
