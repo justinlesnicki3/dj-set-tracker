@@ -36,4 +36,5 @@ export const DJ_DATABASE = [
         image: riordanImg,
         youtubeQuery: 'Riordan',
     },
+    
 ];

@@ -1,7 +1,9 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
+import { searchDJSets } from '../services/youtube';
+import { ActivityIndicator } from 'react-native';
 
 const DJDetailScreen = () => {
     const { params } = useRoute();
@@ -9,9 +11,23 @@ const DJDetailScreen = () => {
     const { djLibrary, addSavedSet, savedSets, removeSavedSet } = useAppContext();
     const navigation = useNavigation();
 
-    const pastSets = djLibrary
-        .filter(set => set.djName?.toLowerCase() === djName?.toLowerCase())
-        .sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
+    const[djSets, setDjSets] = useState([]);
+    const[loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchSets = async () => {
+            try {
+                setLoading(true);
+                const freshSets = await searchDJSets(djName);
+                setDjSets(freshSets);
+            } catch (error) {
+                console.error('Failed to fetch DJ sets:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSets();
+    }, [djName]);
 
     const renderItem = ({ item }) => {
         const isSaved = savedSets.some(s => s.id === item.id);
@@ -60,14 +76,18 @@ const DJDetailScreen = () => {
     return (
         <View style={styles.container}>
             <Text style={styles.header}>{djName}'s Past Sets</Text>
-            <FlatList
-                data={pastSets}
-                keyExtractor={(item) => item.id}
-                renderItem={renderItem}
-                ListEmptyComponent={
-                    <Text style={styles.empty}>No past sets found.</Text>
-                }
-            />
+            {loading ? (
+                <ActivityIndicator size="large" style={{marginTop: 20}} />
+            ) : (
+                <FlatList
+                    data={djSets}
+                    keyExtractor={(item) => item.id}
+                    renderItem={renderItem}
+                    ListEmptyComponent={
+                        <Text style={styles.empty}>No past sets found.</Text>
+                    }
+                />
+            )}
         </View>
     );
 };

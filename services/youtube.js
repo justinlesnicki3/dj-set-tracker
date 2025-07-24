@@ -45,8 +45,8 @@ export const searchDJSets = async (djName, options = {}) => {
             },
         });
 
-        const blacklist = ['interview', 'reaction', 'review', 'recap', 'trailer', 'announcement', 'podcast', 'Episode'];
-        const setKeywords = ['live set', 'dj set', 'boiler room', 'mixmag', 'essential mix', 'full set', 'stream', 'festival', 'club', 'LIVE', '@'];
+        const blacklist = ['interview', 'reaction', 'review', 'recap', 'trailer', 'announcement', 'podcast'];
+        const setKeywords = ['live set', 'dj set', 'boiler room', 'essential mix', 'full set', 'stream', 'festival', 'club', 'LIVE', '@', 'at', 'Live', 'Set'];
 
         const isLikelySet = (title, channelTitle) => {
             const lowerTitle = title.toLowerCase();
