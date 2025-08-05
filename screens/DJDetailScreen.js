@@ -19,7 +19,10 @@ const DJDetailScreen = () => {
             try {
                 setLoading(true);
                 const freshSets = await searchDJSets(djName);
-                setDjSets(freshSets);
+                const sortedSets = freshSets.sort(
+                    (a, b) => new Date(b.publishDate) - new Date(a.publishDate)
+                );
+                setDjSets(sortedSets);
             } catch (error) {
                 console.error('Failed to fetch DJ sets:', error);
             } finally {

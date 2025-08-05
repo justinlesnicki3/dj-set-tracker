@@ -46,16 +46,22 @@ export const searchDJSets = async (djName, options = {}) => {
         });
 
         const blacklist = ['interview', 'reaction', 'review', 'recap', 'trailer', 'announcement', 'podcast'];
-        const setKeywords = ['live set', 'dj set', 'boiler room', 'essential mix', 'full set', 'stream', 'festival', 'club', 'LIVE', '@', 'at', 'Live', 'Set'];
+        const setKeywords = [
+                                'dj set', 'live set', 'boiler room', 'essential mix', 'full set', 'festival', 
+                                'club set', 'music on', 'live from', 'circle', 'cercle', 'mixmag', 'sunset set',
+                                'b2b', 'open to close', 'marathon set', 'extended set', 'all night long', 'sunset',
+                                'performance', 'concert', 'afterparty', 'closing set', 'opening set'
+                            ];
 
         const isLikelySet = (title, channelTitle) => {
-            const lowerTitle = title.toLowerCase();
-            const hasDJName = new RegExp(`\\b${djName.toLowerCase()}\\b`).test(lowerTitle);
-            const hasSetKeyword = setKeywords.some(k => lowerTitle.includes(k));
-            const hasBlacklisted = blacklist.some(b => lowerTitle.includes(b));
+        const lowerTitle = title.toLowerCase();
+        const hasDJName = new RegExp(`\\b${djName.toLowerCase()}\\b`).test(lowerTitle);
+        const hasSetKeyword = setKeywords.some(k => lowerTitle.includes(k));
+        const hasBlacklisted = blacklist.some(b => lowerTitle.includes(b));
 
         return hasDJName && hasSetKeyword && !hasBlacklisted;
     };
+
 
         const longSets = detailsResponse.data.items.filter(video => {
             const duration = parseISO8601Duration(video.contentDetails.duration);

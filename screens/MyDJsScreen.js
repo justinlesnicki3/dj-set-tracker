@@ -84,4 +84,4 @@ const styles = StyleSheet.create({
     empty: { textAlign: 'center', marginTop: 50, color: '#888' },
 });
 
-export default MyDJsScreen;
+export default MyDJsScreen; 
