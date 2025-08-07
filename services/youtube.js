@@ -14,12 +14,12 @@ export const searchDJSets = async (djName, options = {}) => {
   }
 
   try {
-    // 🔁 Fetch multiple pages of search results
+    // 🔁 Fetch up to 50 results (2 pages)
     const searchResults = [];
     let nextPageToken = null;
     let pageCount = 0;
 
-    while (pageCount < 2) { // Fetch up to 50 results
+    while (pageCount < 2) {
       const { data } = await axios.get(SEARCH_URL, {
         signal,
         params: {
@@ -55,31 +55,40 @@ export const searchDJSets = async (djName, options = {}) => {
       },
     });
 
+    // 🔍 Keyword matching
     const blacklist = [
-      'interview', 'reaction', 'review', 'recap', 'trailer', 'announcement',
-      'podcast', 'tutorial', 'how to', 'preview', 'teaser', 'qa', 'q&a', 'shorts',
+      'interview', 'reaction', 'review', 'recap', 'trailer',
+      'announcement', 'podcast', 'qa', 'q&a', 'tutorial',
+      'shorts', 'behind the scenes', 'preview'
     ];
 
     const setKeywords = [
-      'dj set', 'live set', 'boiler room', 'essential mix', 'full set', 'festival',
-      'club set', 'music on', 'live from', 'circle', 'cercle', 'mixmag', 'sunset set',
-      'b2b', 'open to close', 'marathon set', 'extended set', 'all night long',
-      'sunset', 'performance', 'concert', 'afterparty', 'closing set', 'opening set',
-    ];
+  'live', 'set', 'dj', '@', 'boiler room', 'cercle', 'essential mix', 'festival',
+  'mix', 'b2b', 'tomorrowland', 'edc', 'coachella', 'ultra', 'live stream',
+  'sunset', 'concert', 'performance', 'closing set', 'opening set', 'club', 
+  'art car', 'mirage', 'greenvalley', 'culture shock', 'live at', 'main stage',
+  'afterparty', 'burning man', 'fabric', 'mixmag', 'stream', 'live mix',
+  'club space', 'k bridge', 'ushuaïa', 'paralelo', 'sunwaves'
+];
 
-    const normalize = str => str.toLowerCase().replace(/[^\w\s]/g, '');
-    const lowerDJName = djName.toLowerCase();
 
     const isLikelySet = (title, channelTitle) => {
-      const lowerTitle = normalize(title);
-      const lowerChannel = normalize(channelTitle);
-      const hasDJName = lowerTitle.includes(lowerDJName) || lowerChannel.includes(lowerDJName);
+      const lowerTitle = title.toLowerCase();
+      const lowerChannel = channelTitle.toLowerCase();
+      const lowerDJName = djName.toLowerCase();
+
+      const hasDJName =
+        lowerTitle.includes(lowerDJName) || lowerChannel.includes(lowerDJName);
+
       const hasSetKeyword = setKeywords.some(k => lowerTitle.includes(k));
       const hasBlacklisted = blacklist.some(b => lowerTitle.includes(b));
 
-      // 🔍 Optional: Log rejected items for debugging
-      if (!hasDJName || !hasSetKeyword || hasBlacklisted) {
-        console.log('❌ Skipped:', title);
+      if (!hasDJName) {
+        console.log('❌ Skipped (no DJ name):', title);
+      } else if (!hasSetKeyword) {
+        console.log('❌ Skipped (no keyword):', title);
+      } else if (hasBlacklisted) {
+        console.log('❌ Skipped (blacklisted):', title);
       }
 
       return hasDJName && hasSetKeyword && !hasBlacklisted;
@@ -90,7 +99,7 @@ export const searchDJSets = async (djName, options = {}) => {
       const title = video.snippet.title;
       const channel = video.snippet.channelTitle;
 
-      return duration >= 55 && isLikelySet(title, channel);
+      return duration >= 50 && isLikelySet(title, channel); // Threshold dropped from 55 → 50
     });
 
     return longSets.map(video => ({
