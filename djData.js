@@ -3,6 +3,11 @@ import fisherImg from './assets/images/fisher.jpg';
 import oddmobImg from './assets/images/oddmob.jpg';
 import vintagecultureImg from './assets/images/vintageculture.jpg';
 import riordanImg from './assets/images/riordan.jpg';
+import placeholder from './assets/images/placeholder.jpg';
+import maupImg from './assets/images/maup.jpg';
+import gorgoncityImg from './assets/images/gorgoncity.jpg';
+import johnsummitImg from './assets/images/johnsummit.jpg';
+import clooneeImg from './assets/images/cloonee.jpg';
 
 export const DJ_DATABASE = [
     {
@@ -36,5 +41,158 @@ export const DJ_DATABASE = [
         image: riordanImg,
         youtubeQuery: 'Riordan',
     },
+
+    {
+        id: 'Mau P',
+        name: 'Mau P',
+        image: maupImg,
+        youtubeQuery: 'Mau P',
+    },
+
+    {
+        id: 'John Summit',
+        name: 'John Summit',
+        image: johnsummitImg,
+        youtubeQuery: 'John Summit',
+    },
+
+    {
+        id: 'J. Worra',
+        name: 'J. Worra',
+        image: placeholder,
+        youtubeQuery: 'J. Worra',
+    },
+
+    {
+        id: 'Ship Wrek',
+        name: 'Ship Wrek',
+        image: placeholder,
+        youtubeQuery: 'Ship Wrek',
+    },
+
+    {
+        id: 'Gorgon City',
+        name: 'Gorgon City',
+        image: gorgoncityImg,
+        youtubeQuery: 'Gorgon City',
+    },
+
+    {
+        id: 'Discloure',
+        name: 'Disclosure',
+        image: placeholder,
+        youtubeQuery: 'Disclosure',
+    },
+
+    {
+        id: 'Discip',
+        name: 'Discip',
+        image: placeholder,
+        youtubeQuery: 'Discip',
+    },
+
+    {
+        id: 'GENESI',
+        name: 'GENESI',
+        image: placeholder,
+        youtubeQuery: 'GENESI',
+    },
+
+    {
+        id: 'Max Styler',
+        name: 'Max Style',
+        image: placeholder,
+        youtubeQuery: 'Max Styler',
+    }, 
+
+    {
+        id: 'GUDFELLA',
+        name: 'GUDFELLA',
+        image: placeholder,
+        youtubeQuery: 'GUDFELLA',
+    },
     
+    {
+        id: 'Layton Giordani',
+        name: 'Layton Giordani',
+        image: placeholder,
+        youtubeQuery: 'Layton Giordani',
+    },
+
+    {
+        id: 'Roddy Lima',
+        name: 'Roddy Lima',
+        image: placeholder,
+        youtubeQuery: 'Roddy Lima',
+    },
+
+    {
+        id: 'Green Velvet',
+        name: 'Green Velvet',
+        image: placeholder,
+        youtubeQuery: 'Green Velvet',
+    },
+
+    {
+        id: 'Chris Lorenzo',
+        name: 'Chris Lorenzo',
+        image: placeholder,
+        youtubeQuery: 'Chris Lorenzo',
+    },
+
+    {
+        id: 'Matroda',
+        name: 'Matroda',
+        image: placeholder,
+        youtubeQuery: 'Matroda',
+    },
+
+    {
+        id: 'SIDEPIECE',
+        name: 'SIDEPIECE',
+        image: placeholder,
+        youtubeQuery: 'SIDEPIECE',
+    },
+
+    {
+        id: 'Westend',
+        name: 'Westend',
+        image: placeholder,
+        youtubeQuery: 'Westend',
+    },
+
+    {
+        id: 'OMNOM',
+        name: 'OMNOM',
+        image: placeholder,
+        youtubeQuery: 'OMNOM',
+    },
+
+    {
+        id: 'AYYBO',
+        name: 'AYYBO',
+        image: placeholder,
+        youtubeQuery: 'AYYBO',
+    },
+
+    {
+        id: 'Cloonee',
+        name: 'Cloonee',
+        image: clooneeImg,
+        youtubeQuery: 'Cloonee',
+    },
+
+    {
+        id: "it's murph",
+        name: "it's murph",
+        image: placeholder,
+        youtubeQuery: "it's murph",
+    },
+
+    {
+        id: 'MALAA',
+        name: 'MALAA',
+        image: placeholder,
+        youtubeQuery: 'MALAAA',
+    },
 ];

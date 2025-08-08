@@ -11,12 +11,16 @@ import { useAppContext } from '../AppContext';
 import { useNavigation } from '@react-navigation/native';
 
 const djImages = {
+
   'disco lines': require('../assets/images/discolinesMYDJ.jpg'),
   'fisher': require('../assets/images/fisherMYDJ.jpg'),
   'vintage culture': require('../assets/images/vintagecultureMYDJ.jpg'),
   'odd mob': require('../assets/images/oddmobMYDJ.jpg'),
   'riordan': require('../assets/images/riordanMYDJ.jpg'),
-
+  'mau p' : require('../assets/images/maupMYDJ.jpg'),
+  'gorgon city' : require('../assets/images/gorgoncityMYDJ.webp'),
+  'john summit' : require('../assets/images/johnsummitMYDJ.jpg'),
+  'cloonee' : require('../assets/images/clooneeMYDJ.jpg'),
 
 };
 
