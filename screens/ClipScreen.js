@@ -8,8 +8,8 @@ import {
   TouchableOpacity,
   Animated,
   Easing,
+  Image
 } from 'react-native';
-import { WebView } from 'react-native-webview';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 import { Picker } from '@react-native-picker/picker';
@@ -102,10 +102,11 @@ const ClipScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
-      <WebView
-        source={{ uri: `https://www.youtube.com/embed/${videoId}` }}
-        style={styles.video}
-        allowsFullscreenVideo
+
+      {/* Thumbnail only */}
+      <Image
+        source={{ uri: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` }}
+        style={styles.thumbnail}
       />
 
       {!showForm && (
@@ -184,8 +185,14 @@ const ClipScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
-  video: { height: 200, marginBottom: 20, borderRadius: 12, overflow: 'hidden' },
+  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
+
+  thumbnail: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
 
   makeClipButton: {
     backgroundColor: '#33498e',
