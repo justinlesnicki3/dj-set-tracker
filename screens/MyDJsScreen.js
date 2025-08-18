@@ -21,6 +21,15 @@ const djImages = {
   'gorgon city' : require('../assets/images/gorgoncityMYDJ.webp'),
   'john summit' : require('../assets/images/johnsummitMYDJ.jpg'),
   'cloonee' : require('../assets/images/clooneeMYDJ.jpg'),
+  'disclosure' : require('../assets/images/disclosureMYDJ.webp'),
+
+  'genesi' : require('../assets/images/genesiMYDJ.jpg'),
+  'max styler' : require('../assets/images/maxstylerMYDJ.jpg'),
+  'gudfella' : require('../assets/images/gudfellaMYDJ.jpg'),
+  'j. worra' : require('../assets/images/jworraMYDJ.webp'),
+  'ship wrek' : require('../assets/images/shipwrekMYDJ.jpg'),
+
+
 
 };
 

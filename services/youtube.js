@@ -123,6 +123,7 @@ const blacklist = [
   'shorts',
   'behind the scenes',
   'preview',
+  'ufo',
 ];
 
 const setKeywords = [

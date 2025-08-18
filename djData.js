@@ -8,6 +8,15 @@ import maupImg from './assets/images/maup.jpg';
 import gorgoncityImg from './assets/images/gorgoncity.jpg';
 import johnsummitImg from './assets/images/johnsummit.jpg';
 import clooneeImg from './assets/images/cloonee.jpg';
+import disclosureImg from './assets/images/disclosureImg.avif';
+import discipImg from './assets/images/discipImg.webp';
+import genesiImg from './assets/images/genesi.jpg';
+import maxstylerImg from './assets/images/maxstyler.webp';
+import gudfellaImg from './assets/images/gudfella.jpg';
+import jworraImg from './assets/images/jworra.jpg';
+import shipwrekImg from './assets/images/shipwrek.jpg';
+
+
 
 export const DJ_DATABASE = [
     {
@@ -59,14 +68,14 @@ export const DJ_DATABASE = [
     {
         id: 'J. Worra',
         name: 'J. Worra',
-        image: placeholder,
+        image: jworraImg,
         youtubeQuery: 'J. Worra',
     },
 
     {
         id: 'Ship Wrek',
         name: 'Ship Wrek',
-        image: placeholder,
+        image: shipwrekImg,
         youtubeQuery: 'Ship Wrek',
     },
 
@@ -80,35 +89,35 @@ export const DJ_DATABASE = [
     {
         id: 'Discloure',
         name: 'Disclosure',
-        image: placeholder,
+        image: disclosureImg,
         youtubeQuery: 'Disclosure',
     },
 
     {
         id: 'Discip',
         name: 'Discip',
-        image: placeholder,
+        image: discipImg,
         youtubeQuery: 'Discip',
     },
 
     {
         id: 'GENESI',
         name: 'GENESI',
-        image: placeholder,
+        image: genesiImg,
         youtubeQuery: 'GENESI',
     },
 
     {
         id: 'Max Styler',
-        name: 'Max Style',
-        image: placeholder,
+        name: 'Max Styler',
+        image: maxstylerImg,
         youtubeQuery: 'Max Styler',
     }, 
 
     {
         id: 'GUDFELLA',
         name: 'GUDFELLA',
-        image: placeholder,
+        image: gudfellaImg,
         youtubeQuery: 'GUDFELLA',
     },
     
