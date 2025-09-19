@@ -17,6 +17,8 @@
       "infoPlist": {
         "LSApplicationQueriesSchemes": [
           "youtube",
+          "vnd.youtube",
+          "youtube",
           "vnd.youtube"
         ]
       }
@@ -30,6 +32,21 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "99b1b4f3-6d8e-4c56-a0b1-c950eddf721f"
+      }
+    },
+    "owner": "justinlesn",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/99b1b4f3-6d8e-4c56-a0b1-c950eddf721f"
     }
   }
 }
