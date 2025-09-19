@@ -8,7 +8,9 @@ import {
   TouchableOpacity,
   Animated,
   Easing,
-  Image
+  Image,
+  Platform,
+  ActionSheetIOS,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
@@ -157,16 +159,49 @@ const ClipScreen = () => {
           {playlists.length > 0 && (
             <>
               <Text style={styles.or}>or select existing playlist</Text>
-              <Picker
-                selectedValue={selectedPlaylist}
-                onValueChange={setSelectedPlaylist}
-                style={styles.picker}
-              >
-                <Picker.Item label="Select a playlist..." value="" />
-                {playlists.map(p => (
-                  <Picker.Item key={p.name} label={p.name} value={p.name} />
-                ))}
-              </Picker>
+
+              {Platform.OS === 'ios' ? (
+                <TouchableOpacity
+                  style={styles.compactSelect}
+                  accessibilityRole="button"
+                  onPress={() => {
+                    const names = playlists.map(p => p.name);
+                    ActionSheetIOS.showActionSheetWithOptions(
+                      {
+                        title: 'Select a playlist',
+                        options: [...names, 'Cancel'],
+                        cancelButtonIndex: names.length,
+                      },
+                      (buttonIndex) => {
+                        if (buttonIndex < names.length) {
+                          setSelectedPlaylist(names[buttonIndex]);
+                          setNewPlaylistName('');
+                        }
+                      }
+                    );
+                  }}
+                >
+                  <Text style={styles.compactSelectText}>
+                    {selectedPlaylist || 'Select a playlist...'}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <Picker
+                  selectedValue={selectedPlaylist}
+                  onValueChange={(v) => {
+                    setSelectedPlaylist(v);
+                    setNewPlaylistName('');
+                  }}
+                  mode="dropdown"
+                  style={styles.androidPicker}
+                  dropdownIconColor="#555"
+                >
+                  <Picker.Item label="Select a playlist..." value="" />
+                  {playlists.map(p => (
+                    <Picker.Item key={p.name} label={p.name} value={p.name} />
+                  ))}
+                </Picker>
+              )}
             </>
           )}
 
@@ -227,11 +262,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     color: '#888',
   },
-  picker: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    marginBottom: 20,
-  },
+
   saveButton: {
     backgroundColor: '#33498e',
     paddingVertical: 12,
@@ -252,6 +283,30 @@ const styles = StyleSheet.create({
   cancelText: {
     color: '#888',
     fontSize: 15,
+  },
+
+  // iOS compact selector (ActionSheet trigger)
+  compactSelect: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  compactSelectText: {
+    fontSize: 16,
+    color: '#333',
+  },
+
+  // Android dropdown picker (respects height)
+  androidPicker: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    marginBottom: 20,
+    height: 44,
   },
 });
 
