@@ -9,7 +9,7 @@ module.exports = function (api) {
         safe: false,
         allowUndefined: true,
       }],
-      'react-native-reanimated/plugin', // 👈 must be LAST
+      'react-native-worklets/plugin', // 👈 must be LAST
     ],
   };
 };
