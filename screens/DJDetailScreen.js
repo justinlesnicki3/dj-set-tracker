@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+// DJDetailScreen.js
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,26 +11,106 @@ import {
   Alert,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
+
 import { useAppContext } from '../AppContext';
 import { searchDJSets } from '../services/youtube';
-import { openYouTubeVideo } from '../utils/openYouTubeAt'; // ✅ use helper (opens app w/ fallback)
+import { openYouTubeVideo } from '../utils/openYouTubeAt'; // opens app with fallback
+import { supabase } from '../lib/supabase';
 
+/** ---------- Subscribe Button (Supabase) ---------- */
+function SubscribeButton({ djId }) {
+  const [isSubbed, setIsSubbed] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // check if current user is subscribed
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: auth } = await supabase.auth.getUser();
+        if (!auth?.user || !djId) return;
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .select('dj_id')
+          .eq('user_id', auth.user.id)
+          .eq('dj_id', djId)
+          .maybeSingle();
+        if (error) throw error;
+        setIsSubbed(!!data);
+      } catch (e) {
+        // quiet fail is fine for first load
+      }
+    })();
+  }, [djId]);
+
+  const toggle = async () => {
+    setLoading(true);
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth?.user) {
+        Alert.alert('Sign in required', 'Please sign in to subscribe.');
+        return;
+      }
+      if (isSubbed) {
+        const { error } = await supabase
+          .from('subscriptions')
+          .delete()
+          .eq('user_id', auth.user.id)
+          .eq('dj_id', djId);
+        if (error) throw error;
+        setIsSubbed(false);
+      } else {
+        const { error } = await supabase
+          .from('subscriptions')
+          .insert({ user_id: auth.user.id, dj_id: djId });
+        if (error) throw error;
+        setIsSubbed(true);
+      }
+    } catch (e) {
+      Alert.alert('Subscription error', e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <TouchableOpacity
+      onPress={toggle}
+      disabled={loading || !djId}
+      style={[
+        styles.subBtn,
+        { backgroundColor: isSubbed ? '#999' : '#33498e', opacity: djId ? 1 : 0.5 },
+      ]}
+    >
+      <Text style={styles.subBtnText}>{isSubbed ? 'Subscribed' : 'Subscribe'}</Text>
+    </TouchableOpacity>
+  );
+}
+
+/** ---------- Main Screen ---------- */
 const DJDetailScreen = () => {
   const { params } = useRoute();
-  const { djName } = params ?? {}; // ✅ null-safe
+  const { djName } = params ?? {};
   const navigation = useNavigation();
 
-  const { djLibrary, addSavedSet, savedSets, removeSavedSet } = useAppContext();
+  const { addSavedSet, savedSets, removeSavedSet } = useAppContext();
 
   const [djSets, setDjSets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [djId, setDjId] = useState(null); // <-- Supabase djs.id
 
+  // Normalize name used for DB lookups
+  const normalizedName = useMemo(
+    () => (djName || '').trim(),
+    [djName]
+  );
+
+  // 1) Fetch sets from YouTube (your existing behavior)
   useEffect(() => {
     const fetchSets = async () => {
       try {
-        if (!djName) return;
+        if (!normalizedName) return;
         setLoading(true);
-        const freshSets = await searchDJSets(djName);
+        const freshSets = await searchDJSets(normalizedName);
         const sortedSets = freshSets.sort(
           (a, b) => new Date(b.publishDate) - new Date(a.publishDate)
         );
@@ -41,8 +122,50 @@ const DJDetailScreen = () => {
       }
     };
     fetchSets();
-  }, [djName]);
+  }, [normalizedName]);
 
+  // 2) Ensure a row exists in Supabase `djs` for this djName, then store its id
+  useEffect(() => {
+    const ensureDjRow = async () => {
+      if (!normalizedName) return;
+      try {
+        // try to find existing dj by exact name
+        let { data: existing, error: selErr } = await supabase
+          .from('djs')
+          .select('id')
+          .eq('name', normalizedName)
+          .maybeSingle();
+        if (selErr) throw selErr;
+
+        if (existing?.id) {
+          setDjId(existing.id);
+          return;
+        }
+
+        // if not exists, create it (optionally use first thumbnail)
+        const thumb = djSets?.[0]?.thumbnail ?? null;
+        const { data: inserted, error: insErr } = await supabase
+          .from('djs')
+          .insert({
+            name: normalizedName,
+            image_url: thumb, // optional; can be null
+          })
+          .select('id')
+          .single();
+
+        if (insErr) throw insErr;
+        setDjId(inserted.id);
+      } catch (e) {
+        console.log('ensureDjRow error:', e.message);
+      }
+    };
+
+    // Run after we’ve attempted to fetch sets (to have a thumbnail if available)
+    if (normalizedName) ensureDjRow();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [normalizedName, djSets?.length]); // if first fetch changes, we can attach a thumb
+
+  /** ---------- item renderer ---------- */
   const renderItem = ({ item }) => {
     const isSaved = savedSets.some((s) => s.id === item.id);
 
@@ -59,7 +182,6 @@ const DJDetailScreen = () => {
         Alert.alert('Missing video', 'This item has no videoId.');
         return;
       }
-      // Open full set at 0:00 (use openYouTubeAt if you want to jump to a time)
       openYouTubeVideo(item.videoId);
     };
 
@@ -90,19 +212,23 @@ const DJDetailScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>
-        {djName ? `${djName}'s Past Sets` : 'Past Sets'}
-      </Text>
+      {/* Header row with Subscribe */}
+      <View style={styles.headerRow}>
+        <Text style={styles.header}>
+          {normalizedName ? `${normalizedName}'s Past Sets` : 'Past Sets'}
+        </Text>
+        {/* Subscribe button appears once we know the djId */}
+        <SubscribeButton djId={djId} />
+      </View>
+
       {loading ? (
         <ActivityIndicator size="large" style={{ marginTop: 20 }} />
       ) : (
         <FlatList
           data={djSets}
-          keyExtractor={(item) => item.id ?? item.videoId} // ✅ more robust
+          keyExtractor={(item) => item.id ?? item.videoId}
           renderItem={renderItem}
-          ListEmptyComponent={
-            <Text style={styles.empty}>No past sets found.</Text>
-          }
+          ListEmptyComponent={<Text style={styles.empty}>No past sets found.</Text>}
         />
       )}
     </View>
@@ -111,7 +237,8 @@ const DJDetailScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  header: { fontSize: 24, fontWeight: 'bold', marginRight: 12, flex: 1 },
   setItem: { flexDirection: 'row', marginBottom: 15, alignItems: 'center' },
   thumbnail: { width: 100, height: 60, marginRight: 10, borderRadius: 5 },
   title: { fontSize: 16, fontWeight: '500' },
@@ -127,6 +254,14 @@ const styles = StyleSheet.create({
   },
   saveButtonSaved: { backgroundColor: '#4CAF50' },
   saveButtonText: { color: '#fff', fontSize: 14 },
+
+  // Subscribe button
+  subBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+  },
+  subBtnText: { color: '#fff', fontWeight: '700' },
 });
 
 export default DJDetailScreen;
