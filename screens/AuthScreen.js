@@ -1,38 +1,111 @@
-import React, {useState} from 'react';
-import {View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { supabase } from '../lib/supabase';
 
-export default function AuthScreen() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+function AuthScreen({ navigation }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-    async function signUp() {
-        const {error} = await supabase.auth.signUp({email, password});
-        if (error) Alert.alert('Sign up error', error.message);
-        else Alert.alert('Check your email to confirm your account');
+  const handleSignUp = async () => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) throw error;
+      alert('Check your email for the confirmation link!');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    async function signIn() {
-        const {error} = await supabase.auth.signInWithPassword({email, password});
-        if (error) Alert.alert('Sign in error', error.message);
+  const handleSignIn = async () => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      navigation.navigate('Home');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return (
-    <View style={styles.c}>
-      <Text style={styles.h}>DJ Set Tracker</Text>
-      <TextInput style={styles.i} placeholder="Email" autoCapitalize="none" onChangeText={setEmail} value={email}/>
-      <TextInput style={styles.i} placeholder="Password" secureTextEntry onChangeText={setPassword} value={password}/>
-      <TouchableOpacity style={styles.b} onPress={signIn}><Text style={styles.bt}>Sign In</Text></TouchableOpacity>
-      <TouchableOpacity style={[styles.b, styles.secondary]} onPress={signUp}><Text style={styles.bt}>Sign Up</Text></TouchableOpacity>
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Welcome to DJ Set Tracker</Text>
+
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        placeholderTextColor="#999"
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        value={email}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        placeholderTextColor="#999"
+        secureTextEntry
+        onChangeText={setPassword}
+        value={password}
+      />
+
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: '#33498e' }]}
+        onPress={handleSignIn}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>{loading ? 'Loading...' : 'Sign In'}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: '#555' }]}
+        onPress={handleSignUp}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>Sign Up</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  c:{flex:1,justifyContent:'center',padding:24,gap:12,backgroundColor:'#fff'},
-  h:{fontSize:22,fontWeight:'700',textAlign:'center',marginBottom:12},
-  i:{borderWidth:1,borderColor:'#ccc',borderRadius:8,padding:12},
-  b:{backgroundColor:'#33498e',borderRadius:10,padding:14,alignItems:'center'},
-  bt:{color:'#fff',fontWeight:'700'},
-  secondary:{backgroundColor:'#5569b8'}
+  container: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    color: '#000',
+  },
+  button: {
+    paddingVertical: 14,
+    borderRadius: 8,
+    marginVertical: 8,
+    alignItems: 'center',
+  },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  error: { color: 'red', marginBottom: 10, textAlign: 'center' },
 });
+
+export default AuthScreen;

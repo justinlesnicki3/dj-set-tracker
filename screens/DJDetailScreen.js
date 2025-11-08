@@ -11,7 +11,6 @@ import {
   Alert,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-
 import { useAppContext } from '../AppContext';
 import { searchDJSets } from '../services/youtube';
 import { openYouTubeVideo } from '../utils/openYouTubeAt'; // opens app with fallback
@@ -22,7 +21,6 @@ function SubscribeButton({ djId }) {
   const [isSubbed, setIsSubbed] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // check if current user is subscribed
   useEffect(() => {
     (async () => {
       try {
@@ -36,8 +34,8 @@ function SubscribeButton({ djId }) {
           .maybeSingle();
         if (error) throw error;
         setIsSubbed(!!data);
-      } catch (e) {
-        // quiet fail is fine for first load
+      } catch {
+        // ignore initial fail
       }
     })();
   }, [djId]);
@@ -87,24 +85,18 @@ function SubscribeButton({ djId }) {
 }
 
 /** ---------- Main Screen ---------- */
-const DJDetailScreen = () => {
+function DJDetailScreen() {
   const { params } = useRoute();
   const { djName } = params ?? {};
   const navigation = useNavigation();
-
   const { addSavedSet, savedSets, removeSavedSet } = useAppContext();
 
   const [djSets, setDjSets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [djId, setDjId] = useState(null); // <-- Supabase djs.id
+  const [djId, setDjId] = useState(null);
 
-  // Normalize name used for DB lookups
-  const normalizedName = useMemo(
-    () => (djName || '').trim(),
-    [djName]
-  );
+  const normalizedName = useMemo(() => (djName || '').trim(), [djName]);
 
-  // 1) Fetch sets from YouTube (your existing behavior)
   useEffect(() => {
     const fetchSets = async () => {
       try {
@@ -124,12 +116,10 @@ const DJDetailScreen = () => {
     fetchSets();
   }, [normalizedName]);
 
-  // 2) Ensure a row exists in Supabase `djs` for this djName, then store its id
   useEffect(() => {
     const ensureDjRow = async () => {
       if (!normalizedName) return;
       try {
-        // try to find existing dj by exact name
         let { data: existing, error: selErr } = await supabase
           .from('djs')
           .select('id')
@@ -142,17 +132,15 @@ const DJDetailScreen = () => {
           return;
         }
 
-        // if not exists, create it (optionally use first thumbnail)
         const thumb = djSets?.[0]?.thumbnail ?? null;
         const { data: inserted, error: insErr } = await supabase
           .from('djs')
           .insert({
             name: normalizedName,
-            image_url: thumb, // optional; can be null
+            image_url: thumb,
           })
           .select('id')
           .single();
-
         if (insErr) throw insErr;
         setDjId(inserted.id);
       } catch (e) {
@@ -160,21 +148,15 @@ const DJDetailScreen = () => {
       }
     };
 
-    // Run after we’ve attempted to fetch sets (to have a thumbnail if available)
     if (normalizedName) ensureDjRow();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [normalizedName, djSets?.length]); // if first fetch changes, we can attach a thumb
+  }, [normalizedName, djSets?.length]);
 
-  /** ---------- item renderer ---------- */
   const renderItem = ({ item }) => {
     const isSaved = savedSets.some((s) => s.id === item.id);
 
     const handleToggleSave = () => {
-      if (isSaved) {
-        removeSavedSet(item.id);
-      } else {
-        addSavedSet(item);
-      }
+      if (isSaved) removeSavedSet(item.id);
+      else addSavedSet(item);
     };
 
     const handleOpen = () => {
@@ -212,12 +194,10 @@ const DJDetailScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header row with Subscribe */}
       <View style={styles.headerRow}>
         <Text style={styles.header}>
           {normalizedName ? `${normalizedName}'s Past Sets` : 'Past Sets'}
         </Text>
-        {/* Subscribe button appears once we know the djId */}
         <SubscribeButton djId={djId} />
       </View>
 
@@ -229,15 +209,21 @@ const DJDetailScreen = () => {
           keyExtractor={(item) => item.id ?? item.videoId}
           renderItem={renderItem}
           ListEmptyComponent={<Text style={styles.empty}>No past sets found.</Text>}
+          contentContainerStyle={{ paddingBottom: 90 }} // ✅ safeguard if list is short
         />
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
   header: { fontSize: 24, fontWeight: 'bold', marginRight: 12, flex: 1 },
   setItem: { flexDirection: 'row', marginBottom: 15, alignItems: 'center' },
   thumbnail: { width: 100, height: 60, marginRight: 10, borderRadius: 5 },
@@ -254,13 +240,7 @@ const styles = StyleSheet.create({
   },
   saveButtonSaved: { backgroundColor: '#4CAF50' },
   saveButtonText: { color: '#fff', fontSize: 14 },
-
-  // Subscribe button
-  subBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 10,
-  },
+  subBtn: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 10 },
   subBtnText: { color: '#fff', fontWeight: '700' },
 });
 

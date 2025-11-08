@@ -1,16 +1,19 @@
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ import
+import { Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 
-const MyLeaksScreen = () => {
+function MyLeaksScreen() {
   const { playlists } = useAppContext();
   const navigation = useNavigation();
 
   const renderPlaylist = ({ item }) => (
     <TouchableOpacity
       style={styles.playlistItem}
-      onPress={() => navigation.navigate('PlaylistDetail', { playlistName: item.name })}
+      onPress={() =>
+        navigation.navigate('PlaylistDetail', { playlistName: item.name })
+      }
     >
       <Text style={styles.playlistName}>{item.name}</Text>
       <Text style={styles.count}>{item.clips.length} clip(s)</Text>
@@ -18,20 +21,23 @@ const MyLeaksScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}> {/* ✅ replaces View */}
       <Text style={styles.header}>My Playlists</Text>
       {playlists.length === 0 ? (
-        <Text style={styles.empty}>No playlists yet. Create one by saving a clip.</Text>
+        <Text style={styles.empty}>
+          No playlists yet. Create one by saving a clip.
+        </Text>
       ) : (
         <FlatList
           data={playlists}
           keyExtractor={(item) => item.name}
           renderItem={renderPlaylist}
+          showsVerticalScrollIndicator={false}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },

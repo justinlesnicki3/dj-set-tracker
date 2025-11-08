@@ -16,7 +16,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 import { Picker } from '@react-native-picker/picker';
 
-const ClipScreen = () => {
+function ClipScreen() {
   const route = useRoute();
   const navigation = useNavigation();
   const { title, videoId } = route.params;
@@ -105,7 +105,7 @@ const ClipScreen = () => {
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
 
-      {/* Thumbnail only */}
+      {/* Thumbnail */}
       <Image
         source={{ uri: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` }}
         style={styles.thumbnail}
@@ -163,7 +163,6 @@ const ClipScreen = () => {
               {Platform.OS === 'ios' ? (
                 <TouchableOpacity
                   style={styles.compactSelect}
-                  accessibilityRole="button"
                   onPress={() => {
                     const names = playlists.map(p => p.name);
                     ActionSheetIOS.showActionSheetWithOptions(
@@ -216,19 +215,12 @@ const ClipScreen = () => {
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
   title: { fontSize: 20, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
-
-  thumbnail: {
-    width: '100%',
-    height: 200,
-    borderRadius: 12,
-    marginBottom: 20,
-  },
-
+  thumbnail: { width: '100%', height: 200, borderRadius: 12, marginBottom: 20 },
   makeClipButton: {
     backgroundColor: '#33498e',
     paddingVertical: 12,
@@ -237,12 +229,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 20,
   },
-  makeClipText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-
+  makeClipText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   label: {
     fontSize: 14,
     fontWeight: '600',
@@ -257,12 +244,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
   },
-  or: {
-    textAlign: 'center',
-    marginVertical: 10,
-    color: '#888',
-  },
-
+  or: { textAlign: 'center', marginVertical: 10, color: '#888' },
   saveButton: {
     backgroundColor: '#33498e',
     paddingVertical: 12,
@@ -270,22 +252,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  cancelButton: {
-    paddingVertical: 10,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  cancelText: {
-    color: '#888',
-    fontSize: 15,
-  },
-
-  // iOS compact selector (ActionSheet trigger)
+  saveButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  cancelButton: { paddingVertical: 10, alignItems: 'center', marginTop: 10 },
+  cancelText: { color: '#888', fontSize: 15 },
   compactSelect: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -295,12 +264,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 20,
   },
-  compactSelectText: {
-    fontSize: 16,
-    color: '#333',
-  },
-
-  // Android dropdown picker (respects height)
+  compactSelectText: { fontSize: 16, color: '#333' },
   androidPicker: {
     borderWidth: 1,
     borderColor: '#ccc',

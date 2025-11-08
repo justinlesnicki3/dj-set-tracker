@@ -11,8 +11,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 import { openYouTubeAt } from '../utils/openYouTubeAt';
 
-
-const ClipPlayerScreen = () => {
+export default function ClipPlayerScreen() {
   const route = useRoute();
   const navigation = useNavigation();
   const { clips = [], startIndex = 0, playlistName } = route.params ?? {};
@@ -20,11 +19,6 @@ const ClipPlayerScreen = () => {
   const currentClip = clips[currentIndex];
 
   const { removeClipFromPlaylist } = useAppContext();
-
-  const parseTime = (timestamp) => {
-    const [min, sec] = timestamp.split(':').map(Number);
-    return min * 60 + sec;
-  };
 
   const goNext = () => {
     if (currentIndex < clips.length - 1) {
@@ -49,7 +43,6 @@ const ClipPlayerScreen = () => {
     navigation.goBack();
   };
 
-
   const handleOpenInYouTube = () => {
     if (!currentClip?.videoId) {
       Alert.alert('Missing video', 'This clip has no videoId.');
@@ -57,11 +50,11 @@ const ClipPlayerScreen = () => {
     }
     openYouTubeAt({
       videoId: currentClip.videoId,
-      start: currentClip.start, // "mm:ss" / "hh:mm:ss" / seconds — helper supports all
+      start: currentClip.start,
     });
   };
 
-    if (!currentClip) {
+  if (!currentClip) {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>No clip selected</Text>
@@ -69,11 +62,13 @@ const ClipPlayerScreen = () => {
     );
   }
 
-return (
+  return (
     <View style={styles.container}>
       <Text style={styles.title}>{currentClip.title}</Text>
       <Text style={styles.djSetTitle}>From: {currentClip.djSetTitle}</Text>
-      <Text style={styles.timestamp}>{currentClip.start} - {currentClip.end}</Text>
+      <Text style={styles.timestamp}>
+        {currentClip.start} - {currentClip.end}
+      </Text>
 
       <View style={styles.playerWrapper}>
         <Image
@@ -107,7 +102,7 @@ return (
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9f9f9', padding: 20 },
@@ -138,5 +133,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
-export default ClipPlayerScreen;

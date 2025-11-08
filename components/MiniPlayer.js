@@ -1,97 +1,45 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { AppContext } from '../AppContext';
+// components/MiniPlayer.js
+import { View, Text, Pressable, Image } from 'react-native'
+import { usePlayer } from '../lib/playerStore'
 
-const { width } = Dimensions.get('window');
+export default function MiniPlayer({ onOpen }) {
+  const { current, isPlaying, play, pause } = usePlayer()
 
-const MiniPlayer = () => {
-  const navigation = useNavigation();
-  const { currentClip, isPlaying } = useContext(AppContext);
-  const [expanded, setExpanded] = useState(false);
-
-  if (!currentClip) return null;
-
-  const toggleExpanded = () => {
-    setExpanded(prev => !prev);
-  };
-
-  const handlePress = () => {
-    navigation.navigate('ClipPlayer', { clips: [currentClip], startIndex: 0 });
-  };
+  if (!current) return null
 
   return (
-    <TouchableOpacity
-      style={[styles.container, expanded && styles.expandedContainer]}
-      onPress={handlePress}
-      activeOpacity={0.9}
+    <Pressable
+      onPress={onOpen}
+      style={{
+        position: 'absolute',
+        left: 0, right: 0, bottom: 0,
+        paddingHorizontal: 14, paddingVertical: 10,
+        backgroundColor: '#111',
+        borderTopLeftRadius: 14, borderTopRightRadius: 14,
+        flexDirection: 'row', alignItems: 'center', gap: 12,
+        elevation: 12, // Android shadow
+        shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 8, shadowOffset: { width: 0, height: -2 },
+      }}
     >
       <Image
-        source={{ uri: currentClip.thumbnail || currentClip.thumnail }}
-        style={[styles.thumbnail, expanded && styles.largeThumbnail]}
+        source={{ uri: current.thumbnail }}
+        style={{ width: 48, height: 48, borderRadius: 8, backgroundColor: '#222' }}
       />
-      <View style={styles.infoContainer}>
-        <Text numberOfLines={1} style={[styles.title, expanded && styles.expandedTitle]}>
-          {currentClip.title}
-        </Text>
-        <Text style={styles.timestamp}>{currentClip.start} - {currentClip.end}</Text>
+      <View style={{ flex: 1 }}>
+        <Text numberOfLines={1} style={{ color: '#fff', fontWeight: '700' }}>{current.title}</Text>
+        {!!current.djName && (
+          <Text numberOfLines={1} style={{ color: '#aaa', fontSize: 12 }}>{current.djName}</Text>
+        )}
       </View>
-      <Text style={{ color: '#fff', fontSize: 20 }}>{isPlaying ? '⏸️' : '▶️'}</Text>
-    </TouchableOpacity>
-  );
-};
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#33498e',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderColor: '#ccc',
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    zIndex: 100,
-  },
-  expandedContainer: {
-    height: 140,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  thumbnail: {
-    width: 64,
-    height: 36,
-    borderRadius: 4,
-    marginRight: 10,
-    backgroundColor: '#000',
-  },
-  largeThumbnail: {
-    width: width - 40,
-    height: (width - 40) * 0.5625,
-    marginBottom: 10,
-  },
-  infoContainer: {
-    flex: 1,
-  },
-  title: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  expandedTitle: {
-    fontSize: 18,
-    textAlign: 'center',
-  },
-  timestamp: {
-    color: '#ccc',
-    fontSize: 12,
-  },
-  icon: {
-    marginLeft: 10,
-  },
-});
-
-export default MiniPlayer;
+      <Pressable
+        onPress={(e) => { e.stopPropagation(); isPlaying ? pause() : play() }}
+        style={{ padding: 8, minWidth: 40, alignItems: 'center' }}
+        accessibilityRole="button"
+        accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
+      >
+        <Text style={{ color: '#fff', fontSize: 18 }}>{isPlaying ? '⏸' : '▶️'}</Text>
+      </Pressable>
+    </Pressable>
+  )
+}

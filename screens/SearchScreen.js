@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  FlatList,
   TouchableOpacity,
   StyleSheet,
   Image,
@@ -19,7 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 import { DJ_DATABASE } from '../djData';
 
-const SearchScreen = () => {
+function SearchScreen() {
   const [searchTerm, setSearchTerm] = useState('');
   const navigation = useNavigation();
   const { addTrackedDJ, trackedDJs, loading, removeTrackedDJ } = useAppContext();
@@ -84,17 +83,21 @@ const SearchScreen = () => {
       <View style={{ flex: 1 }}>
         <Text style={styles.djName}>{item.name}</Text>
         <TouchableOpacity
-            onPress={() =>
+          onPress={() =>
             isSubscribed(item.name)
-            ? handleUnsubscribe(item.name)
-            : handleSubscribe(item.name)
-        }
-    >
-            <Text style={[styles.subscribeButton, isSubscribed(item.name) ? styles.unsubscribe : styles.subscribe]}>
-                {isSubscribed(item.name) ? 'Unsubscribe' : 'Subscribe'}
-            </Text>
+              ? handleUnsubscribe(item.name)
+              : handleSubscribe(item.name)
+          }
+        >
+          <Text
+            style={[
+              styles.subscribeButton,
+              isSubscribed(item.name) ? styles.unsubscribe : styles.subscribe,
+            ]}
+          >
+            {isSubscribed(item.name) ? 'Unsubscribe' : 'Subscribe'}
+          </Text>
         </TouchableOpacity>
-
       </View>
     </TouchableOpacity>
   );
@@ -115,7 +118,7 @@ const SearchScreen = () => {
       />
 
       <LinearGradient
-        colors={["#dfe9f3", "#ffffff"]}
+        colors={['#dfe9f3', '#ffffff']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.header}
@@ -124,7 +127,7 @@ const SearchScreen = () => {
 
         <View style={styles.searchBarShadowWrapper}>
           <LinearGradient
-            colors={["rgba(255,255,255,0.9)", "rgba(240,240,240,0.95)"]}
+            colors={['rgba(255,255,255,0.9)', 'rgba(240,240,240,0.95)']}
             style={styles.searchBar}
           >
             <TextInput
@@ -148,7 +151,11 @@ const SearchScreen = () => {
           data={filteredDJs}
           keyExtractor={(item) => item.id}
           renderItem={renderDJItem}
-          contentContainerStyle={{ padding: 20, paddingTop: 10 }}
+          contentContainerStyle={{
+            padding: 20,
+            paddingTop: 10,
+            // ❌ removed paddingBottom: 90
+          }}
           ListEmptyComponent={
             <Text style={styles.emptyText}>No DJs found</Text>
           }
@@ -162,24 +169,12 @@ const SearchScreen = () => {
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  screenWrapper: {
-    flex: 1,
-    backgroundColor: '#f5f6fa',
-  },
-  header: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#222',
-    marginBottom: 16,
-  },
+  screenWrapper: { flex: 1, backgroundColor: '#f5f6fa' },
+  header: { paddingTop: 60, paddingHorizontal: 20, paddingBottom: 20 },
+  title: { fontSize: 28, fontWeight: '700', color: '#222', marginBottom: 16 },
   searchBarShadowWrapper: {
     shadowColor: '#000',
     shadowOpacity: 0.15,
@@ -195,11 +190,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 12,
   },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#222',
-  },
+  input: { flex: 1, fontSize: 16, color: '#222' },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -213,46 +204,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
-  cardDisabled: {
-    opacity: 0.5,
-  },
-  thumbnail: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    marginRight: 14,
-  },
-  djName: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#222',
-  },
-  djSubText: {
-    fontSize: 13,
-    color: '#555',
-    marginTop: 4,
-  },
-  instructionWrapper: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  instructionText: {
-    color: '#777',
-    fontSize: 16,
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 40,
-    color: '#777',
-    fontSize: 16,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f6fa',
-  },
+  thumbnail: { width: 72, height: 72, borderRadius: 36, marginRight: 14 },
+  djName: { fontSize: 17, fontWeight: '600', color: '#222' },
+  instructionWrapper: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  instructionText: { color: '#777', fontSize: 16 },
+  emptyText: { textAlign: 'center', marginTop: 40, color: '#777', fontSize: 16 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f6fa' },
   subscribeButton: {
     marginTop: 6,
     paddingVertical: 6,
@@ -262,16 +219,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     overflow: 'hidden',
     alignSelf: 'flex-start',
-    },
-    subscribe: {
-        backgroundColor: '#33498e',
-        color: '#fff',
-    },
-    unsubscribe: {
-        backgroundColor: '#ddd',
-        color: '#333',
-    },
-
+  },
+  subscribe: { backgroundColor: '#33498e', color: '#fff' },
+  unsubscribe: { backgroundColor: '#ddd', color: '#333' },
 });
 
 export default SearchScreen;
