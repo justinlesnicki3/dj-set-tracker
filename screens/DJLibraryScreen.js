@@ -1,16 +1,16 @@
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ import
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Text,
   FlatList,
+  TouchableOpacity,
   StyleSheet,
   Image,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { useAppContext } from '../AppContext';
 
-export default function DJLibraryScreen({ navigation }) {
+function DJLibraryScreen({ navigation }) {
   const { savedSets, removeSavedSet } = useAppContext();
 
   const renderItem = ({ item }) => (
@@ -23,10 +23,7 @@ export default function DJLibraryScreen({ navigation }) {
           })
         }
       >
-        <Image
-          source={{ uri: item.thumbnail }}
-          style={styles.thumbnail}
-        />
+        <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
       </TouchableOpacity>
 
       <View style={{ flex: 1 }}>
@@ -43,7 +40,7 @@ export default function DJLibraryScreen({ navigation }) {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}> {/* ✅ replaces View */}
+    <SafeAreaView style={styles.container} edges={['top']}>
       <Text style={styles.header}>Your DJ Library</Text>
       <FlatList
         data={savedSets}
@@ -81,3 +78,5 @@ const styles = StyleSheet.create({
   removeButtonText: { color: '#fff', fontSize: 13, fontWeight: '600' },
   empty: { textAlign: 'center', marginTop: 50, color: '#888' },
 });
+
+export default DJLibraryScreen;

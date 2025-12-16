@@ -67,25 +67,29 @@ export const AppProvider = ({ children }) => {
     };
 
     const addPlaylist = (name) => {
-        const clean = name.trim().toLowerCase();
-        setPlaylists(prev => {
-        if (prev.some(p => p.name.toLowerCase() === clean)) return prev;
-        return [...prev, { name, clips: [] }];
-    });
-};
-
+    const clean = name.trim().toLowerCase();
+    setPlaylists(prev => {
+    if (prev.some(p => p.name.toLowerCase() === clean)) return prev;
+    return [...prev, { name, clips: [] }];
+  });
+    };
 
     const addClipToPlaylist = (playlistName, clip) => {
-        setPlaylists(prev =>
-            prev.map(p => {
-                if (p.name === playlistName) {
-                    if (p.clips.some(c => c.id === clip.id)) return p;
-                    return {...p, clips: [...p.clips, clip]};
-                }
-                return p;
-            })
-        );
+  setPlaylists(prev =>
+    prev.map(p => {
+      if (p.name === playlistName) {
+        if (p.clips.some(c => c.id === clip.id)) return p;
+        return { ...p, clips: [...p.clips, clip] };
+      }
+      return p;
+    })
+  );
     };
+
+    const removePlaylist = (name) => {
+  setPlaylists((prev) => prev.filter((p) => p.name !== name));
+    };
+
 
     const refreshTrackedDJs = async (djList) => {
         for (const dj of djList) {
@@ -203,6 +207,7 @@ export const AppProvider = ({ children }) => {
                 addPlaylist,
                 addClipToPlaylist,
                 removeClipFromPlaylist,
+                removePlaylist,
                 currentClip,
                 setCurrentClip,
                 isPlaying,
@@ -213,5 +218,15 @@ export const AppProvider = ({ children }) => {
         </AppContext.Provider>
     );
 };
+
+export async function clearAllData() {
+  try {
+    await AsyncStorage.clear();
+    console.log('All local data cleared');
+  } catch (e) {
+    console.log('Error clearing storage', e);
+  }
+}
+
 
 export const useAppContext = () => useContext(AppContext);

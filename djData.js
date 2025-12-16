@@ -15,6 +15,7 @@ import maxstylerImg from './assets/images/maxstyler.webp';
 import gudfellaImg from './assets/images/gudfella.jpg';
 import jworraImg from './assets/images/jworra.jpg';
 import shipwrekImg from './assets/images/shipwrek.jpg';
+import fredagainImg from './assets/images/fredagain.jpg';
 
 
 
@@ -203,5 +204,12 @@ export const DJ_DATABASE = [
         name: 'MALAA',
         image: placeholder,
         youtubeQuery: 'MALAAA',
+    },
+
+    {
+        id: 'Fred again..',
+        name: 'Fred again..',
+        image: fredagainImg,
+        youtubeQuery: 'Fred again..',
     },
 ];

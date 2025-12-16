@@ -1,5 +1,5 @@
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ import
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, FlatList, StyleSheet, Image } from 'react-native';
 import { useAppContext } from '../AppContext';
 
@@ -19,16 +19,20 @@ function NewSetsScreen() {
     </View>
   );
 
+  const sortedSets = [...newSets].sort(
+    (a, b) => new Date(b.publishDate) - new Date(a.publishDate)
+  );
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}> {/* ✅ replaces View */}
+    <SafeAreaView style={styles.container} edges={['top']}>
       <Text style={styles.header}>New Sets</Text>
       <FlatList
-        data={newSets.sort(
-          (a, b) => new Date(b.publishDate) - new Date(a.publishDate)
-        )}
+        data={sortedSets}
         keyExtractor={(item) => item.id}
         renderItem={renderSet}
-        ListEmptyComponent={<Text style={styles.empty}>No new sets yet</Text>}
+        ListEmptyComponent={
+          <Text style={styles.empty}>No new sets yet</Text>
+        }
         showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
