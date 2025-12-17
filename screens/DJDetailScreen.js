@@ -16,73 +16,73 @@ import { searchDJSets } from '../services/youtube';
 import { openYouTubeVideo } from '../utils/openYouTubeAt'; // opens app with fallback
 import { supabase } from '../lib/supabase';
 
-/** ---------- Subscribe Button (Supabase) ---------- */
-function SubscribeButton({ djId }) {
-  const [isSubbed, setIsSubbed] = useState(false);
-  const [loading, setLoading] = useState(false);
+// /** ---------- Subscribe Button (Supabase) ---------- */
+// function SubscribeButton({ djId }) {
+//   const [isSubbed, setIsSubbed] = useState(false);
+//   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data: auth } = await supabase.auth.getUser();
-        if (!auth?.user || !djId) return;
-        const { data, error } = await supabase
-          .from('subscriptions')
-          .select('dj_id')
-          .eq('user_id', auth.user.id)
-          .eq('dj_id', djId)
-          .maybeSingle();
-        if (error) throw error;
-        setIsSubbed(!!data);
-      } catch {
-        // ignore initial fail
-      }
-    })();
-  }, [djId]);
+//   useEffect(() => {
+//     (async () => {
+//       try {
+//         const { data: auth } = await supabase.auth.getUser();
+//         if (!auth?.user || !djId) return;
+//         const { data, error } = await supabase
+//           .from('subscriptions')
+//           .select('dj_id')
+//           .eq('user_id', auth.user.id)
+//           .eq('dj_id', djId)
+//           .maybeSingle();
+//         if (error) throw error;
+//         setIsSubbed(!!data);
+//       } catch {
+//         // ignore initial fail
+//       }
+//     })();
+//   }, [djId]);
 
-  const toggle = async () => {
-    setLoading(true);
-    try {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth?.user) {
-        Alert.alert('Sign in required', 'Please sign in to subscribe.');
-        return;
-      }
-      if (isSubbed) {
-        const { error } = await supabase
-          .from('subscriptions')
-          .delete()
-          .eq('user_id', auth.user.id)
-          .eq('dj_id', djId);
-        if (error) throw error;
-        setIsSubbed(false);
-      } else {
-        const { error } = await supabase
-          .from('subscriptions')
-          .insert({ user_id: auth.user.id, dj_id: djId });
-        if (error) throw error;
-        setIsSubbed(true);
-      }
-    } catch (e) {
-      Alert.alert('Subscription error', e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+//   const toggle = async () => {
+//     setLoading(true);
+//     try {
+//       const { data: auth } = await supabase.auth.getUser();
+//       if (!auth?.user) {
+//         Alert.alert('Sign in required', 'Please sign in to subscribe.');
+//         return;
+//       }
+//       if (isSubbed) {
+//         const { error } = await supabase
+//           .from('subscriptions')
+//           .delete()
+//           .eq('user_id', auth.user.id)
+//           .eq('dj_id', djId);
+//         if (error) throw error;
+//         setIsSubbed(false);
+//       } else {
+//         const { error } = await supabase
+//           .from('subscriptions')
+//           .insert({ user_id: auth.user.id, dj_id: djId });
+//         if (error) throw error;
+//         setIsSubbed(true);
+//       }
+//     } catch (e) {
+//       Alert.alert('Subscription error', e.message);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
 
-  return (
-    <TouchableOpacity
-      onPress={toggle}
-      disabled={loading || !djId}
-      style={[
-        styles.subBtn,
-        { backgroundColor: isSubbed ? '#999' : '#33498e', opacity: djId ? 1 : 0.5 },
-      ]}
-    >
-      <Text style={styles.subBtnText}>{isSubbed ? 'Subscribed' : 'Subscribe'}</Text>
-    </TouchableOpacity>
-  );
-}
+//   return (
+//     <TouchableOpacity
+//       onPress={toggle}
+//       disabled={loading || !djId}
+//       style={[
+//         styles.subBtn,
+//         { backgroundColor: isSubbed ? '#999' : '#33498e', opacity: djId ? 1 : 0.5 },
+//       ]}
+//     >
+//       <Text style={styles.subBtnText}>{isSubbed ? 'Subscribed' : 'Subscribe'}</Text>
+//     </TouchableOpacity>
+//   );
+// }
 
 /** ---------- Main Screen ---------- */
 function DJDetailScreen() {
@@ -198,7 +198,6 @@ function DJDetailScreen() {
         <Text style={styles.header}>
           {normalizedName ? `${normalizedName}'s Past Sets` : 'Past Sets'}
         </Text>
-        <SubscribeButton djId={djId} />
       </View>
 
       {loading ? (

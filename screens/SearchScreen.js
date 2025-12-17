@@ -14,6 +14,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import SubscribeButton from '../components/SubscribeButton';
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 import { DJ_DATABASE } from '../djData';
@@ -74,33 +75,27 @@ function SearchScreen() {
   };
 
   const renderDJItem = ({ item }) => (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      onPress={() => handleViewDJ(item.name)}
-      style={styles.card}
-    >
-      <Image source={item.image} style={styles.thumbnail} />
-      <View style={{ flex: 1 }}>
-        <Text style={styles.djName}>{item.name}</Text>
-        <TouchableOpacity
-          onPress={() =>
-            isSubscribed(item.name)
-              ? handleUnsubscribe(item.name)
-              : handleSubscribe(item.name)
-          }
-        >
-          <Text
-            style={[
-              styles.subscribeButton,
-              isSubscribed(item.name) ? styles.unsubscribe : styles.subscribe,
-            ]}
-          >
-            {isSubscribed(item.name) ? 'Unsubscribe' : 'Subscribe'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
+  <TouchableOpacity
+    activeOpacity={0.8}
+    onPress={() => handleViewDJ(item.name)}
+    style={styles.card}
+  >
+    <Image source={item.image} style={styles.thumbnail} />
+
+    <View style={{ flex: 1 }}>
+      <Text style={styles.djName}>{item.name}</Text>
+
+      <SubscribeButton
+        djName={item.name}
+        style={styles.subscribePill}
+        onSubbed={() => addTrackedDJ(item)}
+        onUnsubbed={() => removeTrackedDJ(item.name.toLowerCase())}
+      />
+
+    </View>
+  </TouchableOpacity>
+);
+
 
   if (loading) {
     return (
@@ -222,6 +217,10 @@ const styles = StyleSheet.create({
   },
   subscribe: { backgroundColor: '#33498e', color: '#fff' },
   unsubscribe: { backgroundColor: '#ddd', color: '#333' },
+  subscribePill: {
+  marginTop: 6,
+  alignSelf: 'flex-start',
+},
 });
 
 export default SearchScreen;
