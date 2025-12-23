@@ -16,10 +16,18 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 import { Picker } from '@react-native-picker/picker';
 
+import {
+  validateClipInputs,
+  buildLeak,
+  resolvePlaylistName,
+  saveLeakFlow,
+} from '../services/clipService';
+
 function ClipScreen() {
   const route = useRoute();
   const navigation = useNavigation();
   const { title, videoId } = route.params;
+
   const { addLeak, playlists, addPlaylist, addClipToPlaylist } = useAppContext();
 
   const [start, setStart] = useState('');
@@ -73,31 +81,35 @@ function ClipScreen() {
   };
 
   const handleSaveLeak = () => {
-    if (!start || !end || !clipTitle.trim()) {
-      Alert.alert('Error', 'Please enter a title, start time, and end time');
+    const validation = validateClipInputs({ start, end, clipTitle });
+    if (!validation.ok) {
+      Alert.alert('Error', validation.message);
       return;
     }
 
-    const leak = {
-      id: `${videoId}-${start}-${end}`,
-      title: clipTitle.trim(),
-      djSetTitle: title,
+    const leak = buildLeak({
       videoId,
       start,
       end,
-    };
+      clipTitle,
+      djSetTitle: title,
+    });
 
-    addLeak(leak);
+    const playlistName = resolvePlaylistName({ newPlaylistName, selectedPlaylist });
 
-    const playlistName = newPlaylistName.trim() || selectedPlaylist;
-    if (playlistName) {
-      if (!playlists.some(p => p.name === playlistName)) {
-        addPlaylist(playlistName);
-      }
-      addClipToPlaylist(playlistName, leak);
-    }
+    const result = saveLeakFlow({
+      leak,
+      playlistName,
+      playlists,
+      addLeak,
+      addPlaylist,
+      addClipToPlaylist,
+    });
 
-    Alert.alert('Saved', `Clip saved${playlistName ? ` to "${playlistName}"` : ''}`);
+    Alert.alert(
+      'Saved',
+      `Clip saved${result.playlistName ? ` to "${result.playlistName}"` : ''}`
+    );
     navigation.goBack();
   };
 
@@ -105,7 +117,6 @@ function ClipScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
 
-      {/* Thumbnail */}
       <Image
         source={{ uri: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` }}
         style={styles.thumbnail}
@@ -164,7 +175,7 @@ function ClipScreen() {
                 <TouchableOpacity
                   style={styles.compactSelect}
                   onPress={() => {
-                    const names = playlists.map(p => p.name);
+                    const names = playlists.map((p) => p.name);
                     ActionSheetIOS.showActionSheetWithOptions(
                       {
                         title: 'Select a playlist',
@@ -196,7 +207,7 @@ function ClipScreen() {
                   dropdownIconColor="#555"
                 >
                   <Picker.Item label="Select a playlist..." value="" />
-                  {playlists.map(p => (
+                  {playlists.map((p) => (
                     <Picker.Item key={p.name} label={p.name} value={p.name} />
                   ))}
                 </Picker>
@@ -230,48 +241,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   makeClipText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: 10,
-    marginBottom: 4,
-    color: '#333',
-  },
-  input: {
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 10,
-  },
+  label: { fontSize: 14, fontWeight: '600', marginTop: 10, marginBottom: 4, color: '#333' },
+  input: { borderColor: '#ccc', borderWidth: 1, borderRadius: 6, padding: 10, marginBottom: 10 },
   or: { textAlign: 'center', marginVertical: 10, color: '#888' },
-  saveButton: {
-    backgroundColor: '#33498e',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 10,
-  },
+  saveButton: { backgroundColor: '#33498e', paddingVertical: 12, borderRadius: 8, alignItems: 'center', marginTop: 10 },
   saveButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   cancelButton: { paddingVertical: 10, alignItems: 'center', marginTop: 10 },
   cancelText: { color: '#888', fontSize: 15 },
-  compactSelect: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
+  compactSelect: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, paddingVertical: 12, paddingHorizontal: 12, justifyContent: 'center', marginBottom: 20 },
   compactSelectText: { fontSize: 16, color: '#333' },
-  androidPicker: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    marginBottom: 20,
-    height: 44,
-  },
+  androidPicker: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, marginBottom: 20, height: 44 },
 });
 
 export default ClipScreen;
