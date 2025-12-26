@@ -10,18 +10,19 @@ import {
 } from 'react-native';
 import { useAppContext } from '../AppContext';
 
+import {
+  buildClipNavParams,
+  removeSavedSetById,
+  keyForSavedSet,
+} from '../services/djLibraryService';
+
 function DJLibraryScreen({ navigation }) {
   const { savedSets, removeSavedSet } = useAppContext();
 
   const renderItem = ({ item }) => (
     <View style={styles.item}>
       <TouchableOpacity
-        onPress={() =>
-          navigation.navigate('Clip', {
-            title: item.title,
-            videoId: item.videoId,
-          })
-        }
+        onPress={() => navigation.navigate('Clip', buildClipNavParams(item))}
       >
         <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
       </TouchableOpacity>
@@ -31,7 +32,7 @@ function DJLibraryScreen({ navigation }) {
 
         <TouchableOpacity
           style={styles.removeButton}
-          onPress={() => removeSavedSet(item.id)}
+          onPress={() => removeSavedSetById(removeSavedSet, item.id)}
         >
           <Text style={styles.removeButtonText}>Remove</Text>
         </TouchableOpacity>
@@ -44,11 +45,9 @@ function DJLibraryScreen({ navigation }) {
       <Text style={styles.header}>Your DJ Library</Text>
       <FlatList
         data={savedSets}
-        keyExtractor={(item, index) => item.id || index.toString()}
+        keyExtractor={keyForSavedSet}
         renderItem={renderItem}
-        ListEmptyComponent={
-          <Text style={styles.empty}>No DJ sets saved yet.</Text>
-        }
+        ListEmptyComponent={<Text style={styles.empty}>No DJ sets saved yet.</Text>}
         showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>

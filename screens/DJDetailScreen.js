@@ -1,4 +1,4 @@
-// DJDetailScreen.js
+// screens/DJDetailScreen.js
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
@@ -8,87 +8,16 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
-import { searchDJSets } from '../services/youtube';
-import { openYouTubeVideo } from '../utils/openYouTubeAt'; // opens app with fallback
-import { supabase } from '../lib/supabase';
 
-// /** ---------- Subscribe Button (Supabase) ---------- */
-// function SubscribeButton({ djId }) {
-//   const [isSubbed, setIsSubbed] = useState(false);
-//   const [loading, setLoading] = useState(false);
+import { fetchAndSortDjSets, ensureDjRow } from '../services/djDetailService';
+import { openSetInYouTube } from '../services/youtubeUiService';
 
-//   useEffect(() => {
-//     (async () => {
-//       try {
-//         const { data: auth } = await supabase.auth.getUser();
-//         if (!auth?.user || !djId) return;
-//         const { data, error } = await supabase
-//           .from('subscriptions')
-//           .select('dj_id')
-//           .eq('user_id', auth.user.id)
-//           .eq('dj_id', djId)
-//           .maybeSingle();
-//         if (error) throw error;
-//         setIsSubbed(!!data);
-//       } catch {
-//         // ignore initial fail
-//       }
-//     })();
-//   }, [djId]);
-
-//   const toggle = async () => {
-//     setLoading(true);
-//     try {
-//       const { data: auth } = await supabase.auth.getUser();
-//       if (!auth?.user) {
-//         Alert.alert('Sign in required', 'Please sign in to subscribe.');
-//         return;
-//       }
-//       if (isSubbed) {
-//         const { error } = await supabase
-//           .from('subscriptions')
-//           .delete()
-//           .eq('user_id', auth.user.id)
-//           .eq('dj_id', djId);
-//         if (error) throw error;
-//         setIsSubbed(false);
-//       } else {
-//         const { error } = await supabase
-//           .from('subscriptions')
-//           .insert({ user_id: auth.user.id, dj_id: djId });
-//         if (error) throw error;
-//         setIsSubbed(true);
-//       }
-//     } catch (e) {
-//       Alert.alert('Subscription error', e.message);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <TouchableOpacity
-//       onPress={toggle}
-//       disabled={loading || !djId}
-//       style={[
-//         styles.subBtn,
-//         { backgroundColor: isSubbed ? '#999' : '#33498e', opacity: djId ? 1 : 0.5 },
-//       ]}
-//     >
-//       <Text style={styles.subBtnText}>{isSubbed ? 'Subscribed' : 'Subscribe'}</Text>
-//     </TouchableOpacity>
-//   );
-// }
-
-/** ---------- Main Screen ---------- */
 function DJDetailScreen() {
   const { params } = useRoute();
   const { djName } = params ?? {};
-  const navigation = useNavigation();
   const { addSavedSet, savedSets, removeSavedSet } = useAppContext();
 
   const [djSets, setDjSets] = useState([]);
@@ -98,58 +27,36 @@ function DJDetailScreen() {
   const normalizedName = useMemo(() => (djName || '').trim(), [djName]);
 
   useEffect(() => {
-    const fetchSets = async () => {
+    let isMounted = true;
+
+    const run = async () => {
       try {
         if (!normalizedName) return;
         setLoading(true);
-        const freshSets = await searchDJSets(normalizedName);
-        const sortedSets = freshSets.sort(
-          (a, b) => new Date(b.publishDate) - new Date(a.publishDate)
-        );
-        setDjSets(sortedSets);
-      } catch (error) {
-        console.error('Failed to fetch DJ sets:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSets();
-  }, [normalizedName]);
 
-  useEffect(() => {
-    const ensureDjRow = async () => {
-      if (!normalizedName) return;
-      try {
-        let { data: existing, error: selErr } = await supabase
-          .from('djs')
-          .select('id')
-          .eq('name', normalizedName)
-          .maybeSingle();
-        if (selErr) throw selErr;
+        const sets = await fetchAndSortDjSets(normalizedName);
+        if (!isMounted) return;
 
-        if (existing?.id) {
-          setDjId(existing.id);
-          return;
-        }
+        setDjSets(sets);
 
-        const thumb = djSets?.[0]?.thumbnail ?? null;
-        const { data: inserted, error: insErr } = await supabase
-          .from('djs')
-          .insert({
-            name: normalizedName,
-            image_url: thumb,
-          })
-          .select('id')
-          .single();
-        if (insErr) throw insErr;
-        setDjId(inserted.id);
+        // ensure DJ row exists (use first thumbnail if available)
+        const thumb = sets?.[0]?.thumbnail ?? null;
+        const id = await ensureDjRow({ name: normalizedName, thumbnailUrl: thumb });
+        if (!isMounted) return;
+
+        setDjId(id);
       } catch (e) {
-        console.log('ensureDjRow error:', e.message);
+        console.log('DJDetail load error:', e?.message ?? e);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
 
-    if (normalizedName) ensureDjRow();
-  }, [normalizedName, djSets?.length]);
+    run();
+    return () => {
+      isMounted = false;
+    };
+  }, [normalizedName]);
 
   const renderItem = ({ item }) => {
     const isSaved = savedSets.some((s) => s.id === item.id);
@@ -159,17 +66,9 @@ function DJDetailScreen() {
       else addSavedSet(item);
     };
 
-    const handleOpen = () => {
-      if (!item?.videoId) {
-        Alert.alert('Missing video', 'This item has no videoId.');
-        return;
-      }
-      openYouTubeVideo(item.videoId);
-    };
-
     return (
       <View style={styles.setItem}>
-        <TouchableOpacity onPress={handleOpen}>
+        <TouchableOpacity onPress={() => openSetInYouTube(item?.videoId)}>
           <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
         </TouchableOpacity>
 
@@ -198,6 +97,7 @@ function DJDetailScreen() {
         <Text style={styles.header}>
           {normalizedName ? `${normalizedName}'s Past Sets` : 'Past Sets'}
         </Text>
+        {/* djId is still available here if you need it later */}
       </View>
 
       {loading ? (
@@ -208,7 +108,7 @@ function DJDetailScreen() {
           keyExtractor={(item) => item.id ?? item.videoId}
           renderItem={renderItem}
           ListEmptyComponent={<Text style={styles.empty}>No past sets found.</Text>}
-          contentContainerStyle={{ paddingBottom: 90 }} // ✅ safeguard if list is short
+          contentContainerStyle={{ paddingBottom: 90 }}
         />
       )}
     </View>
@@ -239,8 +139,6 @@ const styles = StyleSheet.create({
   },
   saveButtonSaved: { backgroundColor: '#4CAF50' },
   saveButtonText: { color: '#fff', fontSize: 14 },
-  subBtn: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 10 },
-  subBtnText: { color: '#fff', fontWeight: '700' },
 });
 
 export default DJDetailScreen;

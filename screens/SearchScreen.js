@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Keyboard,
   ActivityIndicator,
   Animated,
   Easing,
@@ -18,6 +17,13 @@ import SubscribeButton from '../components/SubscribeButton';
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 import { DJ_DATABASE } from '../djData';
+
+import {
+  filterDJs,
+  buildDjDetailNavParams,
+  subscribeFlow,
+  unsubscribeFlow,
+} from '../services/searchService';
 
 function SearchScreen() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,55 +53,45 @@ function SearchScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [searchTerm]);
+  }, [searchTerm, resultsOpacity, resultsTranslate]);
 
-  const filteredDJs = DJ_DATABASE.filter((dj) =>
-    dj.name.toLowerCase().includes(searchTerm.trim().toLowerCase())
-  );
-
-  const handleSubscribe = (djName) => {
-    const djData = DJ_DATABASE.find(
-      (dj) => dj.name.toLowerCase() === djName.toLowerCase()
-    );
-    if (djData) {
-      addTrackedDJ(djData);
-      Keyboard.dismiss();
-    }
-  };
-
-  const handleUnsubscribe = (djName) => {
-    removeTrackedDJ(djName.toLowerCase());
-  };
-
-  const isSubscribed = (djName) =>
-    trackedDJs.some((dj) => dj.name === djName.trim().toLowerCase());
+  const filteredDJs = filterDJs(DJ_DATABASE, searchTerm);
 
   const handleViewDJ = (djName) => {
-    navigation.navigate('DJDetail', { djName });
+    navigation.navigate('DJDetail', buildDjDetailNavParams(djName));
   };
 
   const renderDJItem = ({ item }) => (
-  <TouchableOpacity
-    activeOpacity={0.8}
-    onPress={() => handleViewDJ(item.name)}
-    style={styles.card}
-  >
-    <Image source={item.image} style={styles.thumbnail} />
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() => handleViewDJ(item.name)}
+      style={styles.card}
+    >
+      <Image source={item.image} style={styles.thumbnail} />
 
-    <View style={{ flex: 1 }}>
-      <Text style={styles.djName}>{item.name}</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.djName}>{item.name}</Text>
 
-      <SubscribeButton
-        djName={item.name}
-        style={styles.subscribePill}
-        onSubbed={() => addTrackedDJ(item)}
-        onUnsubbed={() => removeTrackedDJ(item.name.toLowerCase())}
-      />
-
-    </View>
-  </TouchableOpacity>
-);
-
+        <SubscribeButton
+          djName={item.name}
+          style={styles.subscribePill}
+          onSubbed={() =>
+            subscribeFlow({
+              database: DJ_DATABASE,
+              djName: item.name,
+              addTrackedDJ,
+            })
+          }
+          onUnsubbed={() =>
+            unsubscribeFlow({
+              djName: item.name,
+              removeTrackedDJ,
+            })
+          }
+        />
+      </View>
+    </TouchableOpacity>
+  );
 
   if (loading) {
     return (
@@ -108,9 +104,7 @@ function SearchScreen() {
 
   return (
     <View style={styles.screenWrapper}>
-      <StatusBar
-        barStyle={Platform.OS === 'ios' ? 'dark-content' : 'dark-content'}
-      />
+      <StatusBar barStyle={Platform.OS === 'ios' ? 'dark-content' : 'dark-content'} />
 
       <LinearGradient
         colors={['#dfe9f3', '#ffffff']}
@@ -146,14 +140,8 @@ function SearchScreen() {
           data={filteredDJs}
           keyExtractor={(item) => item.id}
           renderItem={renderDJItem}
-          contentContainerStyle={{
-            padding: 20,
-            paddingTop: 10,
-            // ❌ removed paddingBottom: 90
-          }}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>No DJs found</Text>
-          }
+          contentContainerStyle={{ padding: 20, paddingTop: 10 }}
+          ListEmptyComponent={<Text style={styles.emptyText}>No DJs found</Text>}
           style={{
             flex: 1,
             opacity: resultsOpacity,
@@ -204,23 +192,13 @@ const styles = StyleSheet.create({
   instructionWrapper: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   instructionText: { color: '#777', fontSize: 16 },
   emptyText: { textAlign: 'center', marginTop: 40, color: '#777', fontSize: 16 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f6fa' },
-  subscribeButton: {
-    marginTop: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    textAlign: 'center',
-    fontWeight: '600',
-    overflow: 'hidden',
-    alignSelf: 'flex-start',
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f6fa',
   },
-  subscribe: { backgroundColor: '#33498e', color: '#fff' },
-  unsubscribe: { backgroundColor: '#ddd', color: '#333' },
-  subscribePill: {
-  marginTop: 6,
-  alignSelf: 'flex-start',
-},
+  subscribePill: { marginTop: 6, alignSelf: 'flex-start' },
 });
 
 export default SearchScreen;

@@ -9,39 +9,25 @@ import {
 } from 'react-native';
 import { useAppContext } from '../AppContext';
 import { useNavigation } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ safe area
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const djImages = {
-  'disco lines': require('../assets/images/discolinesMYDJ.jpg'),
-  fisher: require('../assets/images/fisherMYDJ.jpg'),
-  'vintage culture': require('../assets/images/vintagecultureMYDJ.jpg'),
-  'odd mob': require('../assets/images/oddmobMYDJ.jpg'),
-  riordan: require('../assets/images/riordanMYDJ.jpg'),
-  'mau p': require('../assets/images/maupMYDJ.jpg'),
-  'gorgon city': require('../assets/images/gorgoncityMYDJ.webp'),
-  'john summit': require('../assets/images/johnsummitMYDJ.jpg'),
-  cloonee: require('../assets/images/clooneeMYDJ.jpg'),
-  disclosure: require('../assets/images/disclosureMYDJ.webp'),
-  genesi: require('../assets/images/genesiMYDJ.jpg'),
-  'max styler': require('../assets/images/maxstylerMYDJ.jpg'),
-  gudfella: require('../assets/images/gudfellaMYDJ.jpg'),
-  'j. worra': require('../assets/images/jworraMYDJ.webp'),
-  'ship wrek': require('../assets/images/shipwrekMYDJ.jpg'),
-  'fred again..': require('../assets/images/fredagainMYDJ.jpg'),
-};
-
-const placeholder = require('../assets/images/placeholder.jpg');
+import {
+  getDjImage,
+  buildDjDetailNavParams,
+  formatSubscribeDate,
+  keyForDj,
+} from '../services/myDjsService';
 
 function MyDJsScreen() {
   const { trackedDJs } = useAppContext();
   const navigation = useNavigation();
 
   const renderDJ = ({ item }) => {
-    const image = djImages[item.name.toLowerCase()] || placeholder;
+    const image = getDjImage(item.name);
 
     return (
       <TouchableOpacity
-        onPress={() => navigation.navigate('DJDetail', { djName: item.name })}
+        onPress={() => navigation.navigate('DJDetail', buildDjDetailNavParams(item.name))}
       >
         <ImageBackground
           source={image}
@@ -51,7 +37,7 @@ function MyDJsScreen() {
           <View style={styles.overlay}>
             <Text style={styles.djName}>{item.name}</Text>
             <Text style={styles.djDate}>
-              Subscribed: {new Date(item.subscribeDate).toLocaleDateString()}
+              Subscribed: {formatSubscribeDate(item.subscribeDate)}
             </Text>
           </View>
         </ImageBackground>
@@ -60,17 +46,16 @@ function MyDJsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}> 
+    <SafeAreaView style={styles.container} edges={['top']}>
       <Text style={styles.header}>My DJs</Text>
       <FlatList
         data={trackedDJs}
-        keyExtractor={(item) => item.name}
+        keyExtractor={keyForDj}
         renderItem={renderDJ}
         ListEmptyComponent={
           <Text style={styles.empty}>You are not subscribed to any DJs yet.</Text>
         }
         showsVerticalScrollIndicator={false}
-        // 🔹 no paddingBottom needed anymore
       />
     </SafeAreaView>
   );

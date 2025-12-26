@@ -5,46 +5,45 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 
-function MyLeaksScreen() {
-  const { playlists, removePlaylist } = useAppContext(); // 👈 make sure this exists in AppContext
-  const navigation = useNavigation();
+import {
+  confirmDeletePlaylist,
+  buildPlaylistNavParams,
+  playlistKey,
+  clipCountLabel,
+} from '../services/myLeaksService';
 
-  const handleDelete = (name) => {
-    Alert.alert(
-      'Delete playlist',
-      `Are you sure you want to delete "${name}"? This will remove all clips in it.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => removePlaylist(name),
-        },
-      ]
-    );
-  };
+function MyLeaksScreen() {
+  const { playlists, removePlaylist } = useAppContext();
+  const navigation = useNavigation();
 
   const renderPlaylist = ({ item }) => (
     <View style={styles.playlistRow}>
       <TouchableOpacity
         style={styles.playlistItem}
         onPress={() =>
-          navigation.navigate('PlaylistDetail', { playlistName: item.name })
+          navigation.navigate(
+            'PlaylistDetail',
+            buildPlaylistNavParams(item.name)
+          )
         }
       >
         <Text style={styles.playlistName}>{item.name}</Text>
-        <Text style={styles.count}>{item.clips.length} clip(s)</Text>
+        <Text style={styles.count}>{clipCountLabel(item.clips.length)}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.deleteButton}
-        onPress={() => handleDelete(item.name)}
+        onPress={() =>
+          confirmDeletePlaylist({
+            name: item.name,
+            onConfirm: removePlaylist,
+          })
+        }
       >
         <Text style={styles.deleteText}>Delete</Text>
       </TouchableOpacity>
@@ -54,6 +53,7 @@ function MyLeaksScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <Text style={styles.header}>My Playlists</Text>
+
       {playlists.length === 0 ? (
         <Text style={styles.empty}>
           No playlists yet. Create one by saving a clip.
@@ -61,7 +61,7 @@ function MyLeaksScreen() {
       ) : (
         <FlatList
           data={playlists}
-          keyExtractor={(item) => item.name}
+          keyExtractor={playlistKey}
           renderItem={renderPlaylist}
           showsVerticalScrollIndicator={false}
         />

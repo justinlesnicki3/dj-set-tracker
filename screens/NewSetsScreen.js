@@ -3,8 +3,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, FlatList, StyleSheet, Image } from 'react-native';
 import { useAppContext } from '../AppContext';
 
+import {
+  sortSetsByNewest,
+  formatPostedDate,
+  keyForSet,
+} from '../services/newSetsService';
+
 function NewSetsScreen() {
   const { newSets } = useAppContext();
+
+  const sortedSets = sortSetsByNewest(newSets);
 
   const renderSet = ({ item }) => (
     <View style={styles.item}>
@@ -12,15 +20,9 @@ function NewSetsScreen() {
       <View style={styles.info}>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.meta}>{item.djName}</Text>
-        <Text style={styles.meta}>
-          Posted: {new Date(item.publishDate).toLocaleDateString()}
-        </Text>
+        <Text style={styles.meta}>Posted: {formatPostedDate(item.publishDate)}</Text>
       </View>
     </View>
-  );
-
-  const sortedSets = [...newSets].sort(
-    (a, b) => new Date(b.publishDate) - new Date(a.publishDate)
   );
 
   return (
@@ -28,11 +30,9 @@ function NewSetsScreen() {
       <Text style={styles.header}>New Sets</Text>
       <FlatList
         data={sortedSets}
-        keyExtractor={(item) => item.id}
+        keyExtractor={keyForSet}
         renderItem={renderSet}
-        ListEmptyComponent={
-          <Text style={styles.empty}>No new sets yet</Text>
-        }
+        ListEmptyComponent={<Text style={styles.empty}>No new sets yet</Text>}
         showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
