@@ -4,6 +4,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+
 
 import { AppProvider } from './AppContext';
 
@@ -63,6 +66,7 @@ function MainTabs() {
 
 export default function App() {
   return (
+    <GestureHandlerRootView style={{ flex: 1}}>
     <AppProvider>
       <NavigationContainer>
         <Stack.Navigator>
@@ -78,5 +82,6 @@ export default function App() {
         </Stack.Navigator>
       </NavigationContainer>
     </AppProvider>
+    </GestureHandlerRootView>
   );
 }

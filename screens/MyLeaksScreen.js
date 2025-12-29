@@ -10,6 +10,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 
+import { Swipeable } from 'react-native-gesture-handler';
+
 import {
   confirmDeletePlaylist,
   buildPlaylistNavParams,
@@ -21,33 +23,37 @@ function MyLeaksScreen() {
   const { playlists, removePlaylist } = useAppContext();
   const navigation = useNavigation();
 
+  const renderRightActions = (item) => (
+    <TouchableOpacity
+      style={styles.swipeDelete}
+      onPress={() =>
+        confirmDeletePlaylist({
+          name: item.name,
+          onConfirm: removePlaylist,
+        })
+      }
+      activeOpacity={0.9}
+    >
+      <Text style={styles.swipeDeleteText}>Delete</Text>
+    </TouchableOpacity>
+  );
+
   const renderPlaylist = ({ item }) => (
-    <View style={styles.playlistRow}>
+    <Swipeable
+      renderRightActions={() => renderRightActions(item)}
+      overshootRight={false}
+    >
       <TouchableOpacity
         style={styles.playlistItem}
+        activeOpacity={0.85}
         onPress={() =>
-          navigation.navigate(
-            'PlaylistDetail',
-            buildPlaylistNavParams(item.name)
-          )
+          navigation.navigate('PlaylistDetail', buildPlaylistNavParams(item.name))
         }
       >
         <Text style={styles.playlistName}>{item.name}</Text>
         <Text style={styles.count}>{clipCountLabel(item.clips.length)}</Text>
       </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={() =>
-          confirmDeletePlaylist({
-            name: item.name,
-            onConfirm: removePlaylist,
-          })
-        }
-      >
-        <Text style={styles.deleteText}>Delete</Text>
-      </TouchableOpacity>
-    </View>
+    </Swipeable>
   );
 
   return (
@@ -64,6 +70,7 @@ function MyLeaksScreen() {
           keyExtractor={playlistKey}
           renderItem={renderPlaylist}
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 10 }}
         />
       )}
     </SafeAreaView>
@@ -73,27 +80,30 @@ function MyLeaksScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
   header: { fontSize: 24, fontWeight: 'bold', marginBottom: 15 },
-  playlistRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
+
+  // The main row (looks like your old playlistItem)
   playlistItem: {
-    flex: 1,
     padding: 15,
     backgroundColor: '#f2f2f2',
     borderRadius: 10,
-    marginRight: 8,
+    marginBottom: 10,
   },
+
   playlistName: { fontSize: 18, fontWeight: 'bold' },
   count: { fontSize: 14, color: '#666', marginTop: 5 },
-  deleteButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 8,
+
+  // Swipe action
+  swipeDelete: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 92,
     backgroundColor: '#FF3B30',
+    borderRadius: 10,
+    marginBottom: 10,
+    marginLeft: 10,
   },
-  deleteText: { color: '#fff', fontWeight: '600', fontSize: 13 },
+  swipeDeleteText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+
   empty: { marginTop: 40, textAlign: 'center', color: '#999' },
 });
 

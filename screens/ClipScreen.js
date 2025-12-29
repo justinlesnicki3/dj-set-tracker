@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { KeyboardAvoidingView, ScrollView } from 'react-native';
 import {
   View,
   Text,
@@ -114,7 +115,17 @@ function ClipScreen() {
   };
 
   return (
-    <View style={styles.container}>
+  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0} // tweak if needed
+  >
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 40 }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={styles.title}>{title}</Text>
 
       <Image
@@ -141,6 +152,7 @@ function ClipScreen() {
             placeholder="Enter song or clip name"
             value={clipTitle}
             onChangeText={setClipTitle}
+            returnKeyType="next"
           />
 
           <Text style={styles.label}>Start Time</Text>
@@ -149,6 +161,7 @@ function ClipScreen() {
             placeholder="e.g. 3:24"
             value={start}
             onChangeText={setStart}
+            returnKeyType="next"
           />
 
           <Text style={styles.label}>End Time</Text>
@@ -157,6 +170,7 @@ function ClipScreen() {
             placeholder="e.g. 5:36"
             value={end}
             onChangeText={setEnd}
+            returnKeyType="done"
           />
 
           <Text style={styles.label}>New Playlist Name (optional)</Text>
@@ -165,6 +179,7 @@ function ClipScreen() {
             placeholder="e.g. My Favorites"
             value={newPlaylistName}
             onChangeText={setNewPlaylistName}
+            returnKeyType="done"
           />
 
           {playlists.length > 0 && (
@@ -196,21 +211,23 @@ function ClipScreen() {
                   </Text>
                 </TouchableOpacity>
               ) : (
-                <Picker
-                  selectedValue={selectedPlaylist}
-                  onValueChange={(v) => {
-                    setSelectedPlaylist(v);
-                    setNewPlaylistName('');
-                  }}
-                  mode="dropdown"
-                  style={styles.androidPicker}
-                  dropdownIconColor="#555"
-                >
-                  <Picker.Item label="Select a playlist..." value="" />
-                  {playlists.map((p) => (
-                    <Picker.Item key={p.name} label={p.name} value={p.name} />
-                  ))}
-                </Picker>
+                <View style={{ marginBottom: 20 }}>
+                  <Picker
+                    selectedValue={selectedPlaylist}
+                    onValueChange={(v) => {
+                      setSelectedPlaylist(v);
+                      setNewPlaylistName('');
+                    }}
+                    mode="dropdown"
+                    style={styles.androidPicker}
+                    dropdownIconColor="#555"
+                  >
+                    <Picker.Item label="Select a playlist..." value="" />
+                    {playlists.map((p) => (
+                      <Picker.Item key={p.name} label={p.name} value={p.name} />
+                    ))}
+                  </Picker>
+                </View>
               )}
             </>
           )}
@@ -224,8 +241,9 @@ function ClipScreen() {
           </TouchableOpacity>
         </Animated.View>
       )}
-    </View>
-  );
+    </ScrollView>
+  </KeyboardAvoidingView>
+);
 }
 
 const styles = StyleSheet.create({
