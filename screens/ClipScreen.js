@@ -16,6 +16,7 @@ import {
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 import { Picker } from '@react-native-picker/picker';
+import { Keyboard, TouchableWithoutFeedback } from 'react-native';
 
 import {
   validateClipInputs,
@@ -115,134 +116,141 @@ function ClipScreen() {
   };
 
   return (
-  <KeyboardAvoidingView
-    style={{ flex: 1 }}
-    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0} // tweak if needed
-  >
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ paddingBottom: 40 }}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
+  <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0} // tweak if needed
     >
-      <Text style={styles.title}>{title}</Text>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.title}>{title}</Text>
 
-      <Image
-        source={{ uri: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` }}
-        style={styles.thumbnail}
-      />
+        <Image
+          source={{ uri: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` }}
+          style={styles.thumbnail}
+        />
 
-      {!showForm && (
-        <TouchableOpacity style={styles.makeClipButton} onPress={animateFormIn}>
-          <Text style={styles.makeClipText}>+ Make Clip</Text>
-        </TouchableOpacity>
-      )}
+        {!showForm && (
+          <TouchableOpacity style={styles.makeClipButton} onPress={animateFormIn}>
+            <Text style={styles.makeClipText}>+ Make Clip</Text>
+          </TouchableOpacity>
+        )}
 
-      {showForm && (
-        <Animated.View
-          style={{
-            opacity: formOpacity,
-            transform: [{ translateY: formTranslate }],
-          }}
-        >
-          <Text style={styles.label}>Clip Title</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter song or clip name"
-            value={clipTitle}
-            onChangeText={setClipTitle}
-            returnKeyType="next"
-          />
+        {showForm && (
+          <Animated.View
+            style={{
+              opacity: formOpacity,
+              transform: [{ translateY: formTranslate }],
+            }}
+          >
+            <Text style={styles.label}>Clip Title</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter song or clip name"
+              value={clipTitle}
+              onChangeText={setClipTitle}
+              returnKeyType="next"
+              blurOnSubmit={false}
+            />
 
-          <Text style={styles.label}>Start Time</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. 3:24"
-            value={start}
-            onChangeText={setStart}
-            returnKeyType="next"
-          />
+            <Text style={styles.label}>Start Time</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. 3:24"
+              value={start}
+              onChangeText={setStart}
+              returnKeyType="next"
+              blurOnSubmit={false}
+            />
 
-          <Text style={styles.label}>End Time</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. 5:36"
-            value={end}
-            onChangeText={setEnd}
-            returnKeyType="done"
-          />
+            <Text style={styles.label}>End Time</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. 5:36"
+              value={end}
+              onChangeText={setEnd}
+              returnKeyType="done"
+              blurOnSubmit={true}
+            />
 
-          <Text style={styles.label}>New Playlist Name (optional)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. My Favorites"
-            value={newPlaylistName}
-            onChangeText={setNewPlaylistName}
-            returnKeyType="done"
-          />
+            <Text style={styles.label}>New Playlist Name (optional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. My Favorites"
+              value={newPlaylistName}
+              onChangeText={setNewPlaylistName}
+              returnKeyType="done"
+              blurOnSubmit={true}
+            />
 
-          {playlists.length > 0 && (
-            <>
-              <Text style={styles.or}>or select existing playlist</Text>
+            {playlists.length > 0 && (
+              <>
+                <Text style={styles.or}>or select existing playlist</Text>
 
-              {Platform.OS === 'ios' ? (
-                <TouchableOpacity
-                  style={styles.compactSelect}
-                  onPress={() => {
-                    const names = playlists.map((p) => p.name);
-                    ActionSheetIOS.showActionSheetWithOptions(
-                      {
-                        title: 'Select a playlist',
-                        options: [...names, 'Cancel'],
-                        cancelButtonIndex: names.length,
-                      },
-                      (buttonIndex) => {
-                        if (buttonIndex < names.length) {
-                          setSelectedPlaylist(names[buttonIndex]);
-                          setNewPlaylistName('');
+                {Platform.OS === 'ios' ? (
+                  <TouchableOpacity
+                    style={styles.compactSelect}
+                    onPress={() => {
+                      const names = playlists.map((p) => p.name);
+                      ActionSheetIOS.showActionSheetWithOptions(
+                        {
+                          title: 'Select a playlist',
+                          options: [...names, 'Cancel'],
+                          cancelButtonIndex: names.length,
+                        },
+                        (buttonIndex) => {
+                          if (buttonIndex < names.length) {
+                            setSelectedPlaylist(names[buttonIndex]);
+                            setNewPlaylistName('');
+                          }
                         }
-                      }
-                    );
-                  }}
-                >
-                  <Text style={styles.compactSelectText}>
-                    {selectedPlaylist || 'Select a playlist...'}
-                  </Text>
-                </TouchableOpacity>
-              ) : (
-                <View style={{ marginBottom: 20 }}>
-                  <Picker
-                    selectedValue={selectedPlaylist}
-                    onValueChange={(v) => {
-                      setSelectedPlaylist(v);
-                      setNewPlaylistName('');
+                      );
                     }}
-                    mode="dropdown"
-                    style={styles.androidPicker}
-                    dropdownIconColor="#555"
                   >
-                    <Picker.Item label="Select a playlist..." value="" />
-                    {playlists.map((p) => (
-                      <Picker.Item key={p.name} label={p.name} value={p.name} />
-                    ))}
-                  </Picker>
-                </View>
-              )}
-            </>
-          )}
+                    <Text style={styles.compactSelectText}>
+                      {selectedPlaylist || 'Select a playlist...'}
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <View style={{ marginBottom: 20 }}>
+                    <Picker
+                      selectedValue={selectedPlaylist}
+                      onValueChange={(v) => {
+                        setSelectedPlaylist(v);
+                        setNewPlaylistName('');
+                      }}
+                      mode="dropdown"
+                      style={styles.androidPicker}
+                      dropdownIconColor="#555"
+                    >
+                      <Picker.Item label="Select a playlist..." value="" />
+                      {playlists.map((p) => (
+                        <Picker.Item key={p.name} label={p.name} value={p.name} />
+                      ))}
+                    </Picker>
+                  </View>
+                )}
+              </>
+            )}
 
-          <TouchableOpacity style={styles.saveButton} onPress={handleSaveLeak}>
-            <Text style={styles.saveButtonText}>Save Clip</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.saveButton} onPress={handleSaveLeak}>
+              <Text style={styles.saveButtonText}>Save Clip</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.cancelButton} onPress={animateFormOut}>
-            <Text style={styles.cancelText}>Cancel</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      )}
-    </ScrollView>
-  </KeyboardAvoidingView>
+            <TouchableOpacity style={styles.cancelButton} onPress={animateFormOut}>
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+      </ScrollView>
+    </KeyboardAvoidingView>
+  </TouchableWithoutFeedback>
 );
 }
 

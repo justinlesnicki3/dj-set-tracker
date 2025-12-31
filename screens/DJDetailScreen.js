@@ -59,37 +59,49 @@ function DJDetailScreen() {
   }, [normalizedName]);
 
   const renderItem = ({ item }) => {
-    const isSaved = savedSets.some((s) => s.id === item.id);
+  const isSaved = savedSets.some((s) => s.id === item.id);
 
-    const handleToggleSave = () => {
-      if (isSaved) removeSavedSet(item.id);
-      else addSavedSet(item);
-    };
-
-    return (
-      <View style={styles.setItem}>
-        <TouchableOpacity onPress={() => openSetInYouTube(item?.videoId)}>
-          <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
-        </TouchableOpacity>
-
-        <View style={{ flex: 1 }}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.date}>
-            Posted: {new Date(item.publishDate).toLocaleDateString()}
-          </Text>
-
-          <TouchableOpacity
-            style={[styles.saveButton, isSaved && styles.saveButtonSaved]}
-            onPress={handleToggleSave}
-          >
-            <Text style={styles.saveButtonText}>
-              {isSaved ? '✓ Saved (Unsave)' : 'Save'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
+  const handleToggleSave = () => {
+    if (isSaved) removeSavedSet(item.id);
+    else addSavedSet(item);
   };
+
+  const handleOpen = () => {
+    openSetInYouTube(item?.videoId);
+  };
+
+  return (
+    <TouchableOpacity
+      onPress={handleOpen}
+      activeOpacity={0.85}
+      style={styles.setItem}
+    >
+      <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+
+      <View style={{ flex: 1 }}>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.date}>
+          Posted: {new Date(item.publishDate).toLocaleDateString()}
+        </Text>
+
+        {/* ✅ Save button does NOT trigger row press */}
+        <TouchableOpacity
+          onPress={(e) => {
+            e.stopPropagation?.(); // iOS/Android RN supports this
+            handleToggleSave();
+          }}
+          activeOpacity={0.85}
+          style={[styles.saveButton, isSaved && styles.saveButtonSaved]}
+        >
+          <Text style={styles.saveButtonText}>
+            {isSaved ? '✓ Saved (Unsave)' : 'Save'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
 
   return (
     <View style={styles.container}>
@@ -124,7 +136,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   header: { fontSize: 24, fontWeight: 'bold', marginRight: 12, flex: 1 },
-  setItem: { flexDirection: 'row', marginBottom: 15, alignItems: 'center' },
+  setItem: {
+  flexDirection: 'row',
+  marginBottom: 15,
+  alignItems: 'center',
+  backgroundColor: '#fff',
+  borderRadius: 10,
+  padding: 10,
+  },
   thumbnail: { width: 100, height: 60, marginRight: 10, borderRadius: 5 },
   title: { fontSize: 16, fontWeight: '500' },
   date: { fontSize: 14, color: '#666', marginTop: 4 },

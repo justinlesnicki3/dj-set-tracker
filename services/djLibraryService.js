@@ -1,5 +1,3 @@
-// services/djLibraryService.js
-
 export function buildClipNavParams(setItem) {
   return {
     title: setItem?.title ?? '',
@@ -14,4 +12,21 @@ export function removeSavedSetById(removeSavedSetFn, id) {
 
 export function keyForSavedSet(item, index) {
   return item?.id ?? item?.videoId ?? String(index);
+}
+
+// ✅ dropdown helpers
+export function buildYouTubeVideoId(setItem) {
+  return setItem?.videoId ?? setItem?.id ?? null;
+}
+
+export function isExpanded(expandedId, item) {
+  const id = item?.id ?? item?.videoId ?? null;
+  return !!id && expandedId === id;
+}
+
+// only one expanded at a time; tapping same closes it
+export function toggleExpandedId(currentExpandedId, item) {
+  const id = item?.id ?? item?.videoId ?? null;
+  if (!id) return null;
+  return currentExpandedId === id ? null : id;
 }

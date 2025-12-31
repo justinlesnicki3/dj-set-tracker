@@ -17,6 +17,8 @@ import SubscribeButton from '../components/SubscribeButton';
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 import { DJ_DATABASE } from '../djData';
+import { Keyboard, TouchableWithoutFeedback } from 'react-native';
+
 
 import {
   filterDJs,
@@ -103,6 +105,7 @@ function SearchScreen() {
   }
 
   return (
+  <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
     <View style={styles.screenWrapper}>
       <StatusBar barStyle={Platform.OS === 'ios' ? 'dark-content' : 'dark-content'} />
 
@@ -151,7 +154,9 @@ function SearchScreen() {
         />
       )}
     </View>
-  );
+  </TouchableWithoutFeedback>
+);
+
 }
 
 const styles = StyleSheet.create({

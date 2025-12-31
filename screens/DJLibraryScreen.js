@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Text,
@@ -7,38 +7,155 @@ import {
   StyleSheet,
   Image,
   View,
+  Animated,
+  Easing,
 } from 'react-native';
 import { useAppContext } from '../AppContext';
+import { openYouTubeVideo } from '../utils/openYouTubeAt';
 
 import {
   buildClipNavParams,
   removeSavedSetById,
   keyForSavedSet,
+  toggleExpandedId,
+  isExpanded,
+  buildYouTubeVideoId,
 } from '../services/djLibraryService';
+
+function LibraryRow({ item, expanded, onToggle, onRemove, onViewYouTube, onCreateClip }) {
+  const anim = useRef(new Animated.Value(expanded ? 1 : 0)).current;
+  const [contentHeight, setContentHeight] = useState(0);
+
+  // animate open/close
+  useEffect(() => {
+    Animated.timing(anim, {
+      toValue: expanded ? 1 : 0,
+      duration: expanded ? 260 : 200,
+      easing: expanded ? Easing.out(Easing.cubic) : Easing.in(Easing.cubic),
+      useNativeDriver: false, // height
+    }).start();
+  }, [expanded, anim]);
+
+  const height = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, contentHeight],
+  });
+
+  const opacity = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+  const translateY = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-6, 0],
+  });
+
+  return (
+    <View style={styles.cardWrap}>
+      {/* Row tap toggles dropdown */}
+      <TouchableOpacity activeOpacity={0.85} style={styles.item} onPress={onToggle}>
+        <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title} numberOfLines={2}>
+            {item.title}
+          </Text>
+
+          <View style={styles.rowMeta}>
+            <Text style={styles.hint}>{expanded ? 'Tap to hide options' : 'Tap for options'}</Text>
+
+            <TouchableOpacity
+              style={styles.removeButton}
+              activeOpacity={0.85}
+              onPress={onRemove}
+            >
+              <Text style={styles.removeButtonText}>Remove</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableOpacity>
+
+      {/* ✅ Hidden measurer: NOT constrained by animated height */}
+      <View
+        pointerEvents="none"
+        style={styles.hiddenMeasure}
+        onLayout={(e) => {
+          const h = e.nativeEvent.layout.height;
+          // only set if changed (prevents loops)
+          if (h && h !== contentHeight) setContentHeight(h);
+        }}
+      >
+        <View style={styles.dropdown}>
+          <TouchableOpacity style={styles.actionBtn}>
+            <Text style={styles.actionText}>View in YouTube</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.actionBtn, styles.actionPrimary]}>
+            <Text style={[styles.actionText, styles.actionPrimaryText]}>Create a clip</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* ✅ Animated dropdown uses the measured height */}
+      <Animated.View style={{ height, overflow: 'hidden' }}>
+        <Animated.View style={{ opacity, transform: [{ translateY }] }}>
+          <View style={styles.dropdown}>
+            <TouchableOpacity style={styles.actionBtn} onPress={onViewYouTube} activeOpacity={0.85}>
+              <Text style={styles.actionText}>View in YouTube</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionBtn, styles.actionPrimary]}
+              onPress={onCreateClip}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.actionText, styles.actionPrimaryText]}>Create a clip</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </Animated.View>
+    </View>
+  );
+}
 
 function DJLibraryScreen({ navigation }) {
   const { savedSets, removeSavedSet } = useAppContext();
+  const [expandedId, setExpandedId] = useState(null);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.item}>
-      <TouchableOpacity
-        onPress={() => navigation.navigate('Clip', buildClipNavParams(item))}
-      >
-        <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
-      </TouchableOpacity>
+  const onToggleRow = useCallback((item) => {
+    setExpandedId((prev) => toggleExpandedId(prev, item));
+  }, []);
 
-      <View style={{ flex: 1 }}>
-        <Text style={styles.title}>{item.title}</Text>
+  const renderItem = ({ item }) => {
+    const expanded = isExpanded(expandedId, item);
 
-        <TouchableOpacity
-          style={styles.removeButton}
-          onPress={() => removeSavedSetById(removeSavedSet, item.id)}
-        >
-          <Text style={styles.removeButtonText}>Remove</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    const onRemove = (e) => {
+      e?.stopPropagation?.();
+      removeSavedSetById(removeSavedSet, item.id);
+    };
+
+    const onViewYouTube = () => {
+      const vid = buildYouTubeVideoId(item);
+      if (!vid) return;
+      openYouTubeVideo(vid);
+    };
+
+    const onCreateClip = () => {
+      navigation.navigate('Clip', buildClipNavParams(item));
+    };
+
+    return (
+      <LibraryRow
+        item={item}
+        expanded={expanded}
+        onToggle={() => onToggleRow(item)}
+        onRemove={onRemove}
+        onViewYouTube={onViewYouTube}
+        onCreateClip={onCreateClip}
+      />
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -57,7 +174,22 @@ function DJLibraryScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
   header: { fontSize: 24, fontWeight: 'bold', marginBottom: 15 },
-  item: { flexDirection: 'row', marginBottom: 15, alignItems: 'center' },
+
+  cardWrap: {
+    marginBottom: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#eee',
+    backgroundColor: '#fff',
+    overflow: 'hidden',
+  },
+
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+  },
+
   thumbnail: {
     width: 120,
     height: 67,
@@ -65,9 +197,19 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#000',
   },
+
   title: { fontSize: 16, fontWeight: '500' },
+
+  rowMeta: {
+    marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  hint: { color: '#888', fontSize: 12 },
+
   removeButton: {
-    marginTop: 6,
     paddingVertical: 6,
     paddingHorizontal: 12,
     backgroundColor: '#FF3B30',
@@ -75,6 +217,34 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   removeButtonText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+
+  dropdown: {
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    padding: 10,
+    gap: 8,
+  },
+
+  actionBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: '#f2f2f2',
+  },
+  actionText: { fontWeight: '700', color: '#222' },
+
+  actionPrimary: { backgroundColor: '#33498e' },
+  actionPrimaryText: { color: '#fff' },
+
+  // ✅ KEY FIX: hidden measurer that can layout at full height
+  hiddenMeasure: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    opacity: 0,
+    zIndex: -1,
+  },
+
   empty: { textAlign: 'center', marginTop: 50, color: '#888' },
 });
 

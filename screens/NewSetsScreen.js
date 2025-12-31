@@ -1,20 +1,23 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, FlatList, StyleSheet, Image } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useAppContext } from '../AppContext';
+import { openYouTubeVideo } from '../utils/openYouTubeAt';
 
 import {
   sortSetsByNewest,
   formatPostedDate,
   keyForSet,
   refreshNewSetsFlow,
+  isSetSaved,
+  saveSetFlow,
 } from '../services/newSetsService';
 
 function NewSetsScreen() {
-  const { newSets, trackedDJs, refreshTrackedDJs } = useAppContext();
+  const { newSets, trackedDJs, refreshTrackedDJs, savedSets, addSavedSet, removeSavedSet } = useAppContext();
   const [refreshing, setRefreshing] = useState(false);
 
-  const sortedSets = sortSetsByNewest(newSets);
+  const sortedSets = useMemo(() => sortSetsByNewest(newSets), [newSets]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -25,21 +28,61 @@ function NewSetsScreen() {
     }
   }, [trackedDJs, refreshTrackedDJs]);
 
-  const renderSet = ({ item }) => (
-    <View style={styles.item}>
-      <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
-      <View style={styles.info}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.meta}>{item.djName}</Text>
-        <Text style={styles.meta}>Posted: {formatPostedDate(item.publishDate)}</Text>
+  const renderSet = ({ item }) => {
+  const saved = isSetSaved(savedSets, item);
+
+  const onOpen = () => {
+    const videoId = item?.videoId;     // ✅ only use the real YouTube id
+    if (!videoId) return;
+    openYouTubeVideo(videoId);
+  };
+
+  const onToggleSave = () => {
+    saveSetFlow({
+      setItem: item,
+      isSaved: saved,
+      addSavedSet,
+      removeSavedSet,
+    });
+  };
+
+  return (
+    <View style={styles.card}>
+      {/* ✅ tap anywhere on this row opens youtube */}
+      <TouchableOpacity style={styles.row} activeOpacity={0.85} onPress={onOpen}>
+        <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+
+        <View style={styles.info}>
+          <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
+          <Text style={styles.meta}>{item.djName}</Text>
+          <Text style={styles.meta}>Posted: {formatPostedDate(item.publishDate)}</Text>
+        </View>
+      </TouchableOpacity>
+
+      <View style={styles.actions}>
+        {/* ✅ save button does NOT trigger open */}
+        <TouchableOpacity
+          onPress={(e) => {
+            e.stopPropagation?.();
+            onToggleSave();
+          }}
+          style={[styles.saveBtn, saved && styles.saveBtnSaved]}
+          activeOpacity={0.85}
+        >
+          <Text style={[styles.saveText, saved && styles.saveTextSaved]}>
+            {saved ? 'Saved' : 'Save for later'}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
+};
+
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <FlatList
-        style={styles.list} // makes list fill the screen
+        style={styles.list}
         data={sortedSets}
         keyExtractor={keyForSet}
         renderItem={renderSet}
@@ -49,15 +92,11 @@ function NewSetsScreen() {
             <Text style={styles.empty}>No new sets yet</Text>
           </View>
         }
-        // ✅ pull-to-refresh
         refreshing={refreshing}
         onRefresh={onRefresh}
-        // ✅ makes the "scroll area" the full page even when short/empty
         contentContainerStyle={styles.content}
-        // ✅ iOS: allow pull even when not scrollable
         alwaysBounceVertical
         bounces
-        // ✅ Android: allow overscroll/pull gesture even when short
         overScrollMode="always"
         showsVerticalScrollIndicator={false}
       />
@@ -67,10 +106,8 @@ function NewSetsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#fff' },
-
   list: { flex: 1 },
 
-  // padding moved here so the FlatList owns the whole gesture surface
   content: {
     flexGrow: 1,
     padding: 20,
@@ -79,11 +116,41 @@ const styles = StyleSheet.create({
 
   header: { fontSize: 24, fontWeight: 'bold', marginBottom: 15 },
 
-  item: { flexDirection: 'row', marginBottom: 15 },
-  thumbnail: { width: 120, height: 67, borderRadius: 6, marginRight: 10 },
+  card: {
+    marginBottom: 14,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#eee',
+    overflow: 'hidden',
+  },
+
+  row: { flexDirection: 'row', padding: 12 },
+  thumbnail: { width: 120, height: 67, borderRadius: 8, marginRight: 10 },
   info: { flex: 1 },
   title: { fontSize: 16, fontWeight: '600' },
   meta: { color: '#666', fontSize: 14, marginTop: 4 },
+
+  actions: {
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    paddingTop: 0,
+    alignItems: 'flex-start',
+  },
+
+  saveBtn: {
+    backgroundColor: '#33498e',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+  },
+  saveBtnSaved: {
+    backgroundColor: '#e9eefc',
+    borderWidth: 1,
+    borderColor: '#33498e',
+  },
+  saveText: { color: '#fff', fontWeight: '700' },
+  saveTextSaved: { color: '#33498e' },
 
   emptyWrap: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   empty: { color: '#888' },

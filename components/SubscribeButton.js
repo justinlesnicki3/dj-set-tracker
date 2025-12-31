@@ -2,20 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { TouchableOpacity, Text, Alert } from 'react-native';
 import { supabase } from '../lib/supabase';
 
-/**
- * Subscribe button that works from Search:
- * - Ensures the DJ exists in `djs` (by name)
- * - Toggles a row in `subscriptions` for the logged-in user
- */
-export default function SubscribeButton({ djName, thumbnailUrl, style, onSubbed, onUnsubbed }) {
-
+export default function SubscribeButton({
+  djName,
+  thumbnailUrl,
+  style,
+  onSubbed,
+  onUnsubbed,
+}) {
   const [djId, setDjId] = useState(null);
   const [isSubbed, setIsSubbed] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const normalizedName = (djName || '').trim();
 
-  // Ensure DJ row exists + get djId
   useEffect(() => {
     let isMounted = true;
 
@@ -23,7 +22,6 @@ export default function SubscribeButton({ djName, thumbnailUrl, style, onSubbed,
       try {
         if (!normalizedName) return;
 
-        // 1) try find
         const { data: existing, error: selErr } = await supabase
           .from('djs')
           .select('id')
@@ -37,7 +35,6 @@ export default function SubscribeButton({ djName, thumbnailUrl, style, onSubbed,
           return;
         }
 
-        // 2) insert if missing
         const { data: inserted, error: insErr } = await supabase
           .from('djs')
           .insert({ name: normalizedName, image_url: thumbnailUrl ?? null })
@@ -56,7 +53,6 @@ export default function SubscribeButton({ djName, thumbnailUrl, style, onSubbed,
     };
   }, [normalizedName, thumbnailUrl]);
 
-  // Check subscription state
   useEffect(() => {
     let isMounted = true;
 
@@ -85,49 +81,57 @@ export default function SubscribeButton({ djName, thumbnailUrl, style, onSubbed,
   }, [djId]);
 
   const toggle = async () => {
-  setLoading(true);
-  try {
-    const { data: auth } = await supabase.auth.getUser();
-    if (!auth?.user) {
-      Alert.alert('Sign in required', 'Please sign in to subscribe.');
-      return;
+    setLoading(true);
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth?.user) {
+        Alert.alert('Sign in required', 'Please sign in to subscribe.');
+        return;
+      }
+      if (!djId) return;
+
+      if (isSubbed) {
+        const { error } = await supabase
+          .from('subscriptions')
+          .delete()
+          .eq('user_id', auth.user.id)
+          .eq('dj_id', djId);
+
+        if (error) throw error;
+
+        setIsSubbed(false);
+        onUnsubbed?.();
+      } else {
+        const { error } = await supabase
+          .from('subscriptions')
+          .insert({ user_id: auth.user.id, dj_id: djId });
+
+        if (error) throw error;
+
+        setIsSubbed(true);
+        onSubbed?.();
+      }
+    } catch (e) {
+      Alert.alert('Subscription error', e?.message ?? 'Unknown error');
+    } finally {
+      setLoading(false);
     }
-    if (!djId) return;
-
-    if (isSubbed) {
-      const { error } = await supabase
-        .from('subscriptions')
-        .delete()
-        .eq('user_id', auth.user.id)
-        .eq('dj_id', djId);
-
-      if (error) throw error;
-
-      setIsSubbed(false);
-      onUnsubbed?.(); // ✅ updates trackedDJs
-    } else {
-      const { error } = await supabase
-        .from('subscriptions')
-        .insert({ user_id: auth.user.id, dj_id: djId });
-
-      if (error) throw error;
-
-      setIsSubbed(true);
-      onSubbed?.(); // ✅ updates trackedDJs
-    }
-  } catch (e) {
-    Alert.alert('Subscription error', e?.message ?? 'Unknown error');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <TouchableOpacity
-      onPress={toggle}
+      onPress={(e) => {
+        e?.stopPropagation?.(); // ✅ prevents triggering parent card press
+        toggle();
+      }}
+      onPressIn={(e) => e?.stopPropagation?.()} // ✅ extra safety
       disabled={loading || !normalizedName}
+      hitSlop={{ top: 2, bottom: 2, left: 2, right: 2 }} // ✅ tiny tap area (not huge)
       style={[
         {
+          alignSelf: 'flex-start', // ✅ keeps it tight
+          flexGrow: 0,
+          flexShrink: 0,
           paddingVertical: 6,
           paddingHorizontal: 12,
           borderRadius: 10,
@@ -140,7 +144,6 @@ export default function SubscribeButton({ djName, thumbnailUrl, style, onSubbed,
       <Text style={{ color: '#fff', fontWeight: '700' }}>
         {isSubbed ? 'Subscribed' : 'Subscribe'}
       </Text>
-
     </TouchableOpacity>
   );
 }
