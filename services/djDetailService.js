@@ -1,36 +1,37 @@
-// services/djDetailService.js
 import { supabase } from '../lib/supabase';
 import { searchDJSets } from './youtube';
 
+export function normalizeDjName(name) {
+  return (name || '').trim().toLowerCase();
+}
+
 export async function fetchAndSortDjSets(djName) {
-  if (!djName?.trim()) return [];
-  const freshSets = await searchDJSets(djName.trim());
+  const q = (djName || '').trim();
+  if (!q) return [];
+  const freshSets = await searchDJSets(q);
   return [...freshSets].sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
 }
 
 /**
- * Ensures a row exists in `djs` table for this DJ name.
+ * Ensures a row exists in `djs` for this DJ name (normalized).
  * Returns djId (existing or newly created).
  */
+
 export async function ensureDjRow({ name, thumbnailUrl = null }) {
-  const normalizedName = (name || '').trim();
-  if (!normalizedName) return null;
+  const clean = (name || '').trim();
+  if (!clean) return null;
 
-  const { data: existing, error: selErr } = await supabase
+  // upsert by name_key (generated lower(name))
+  const { data, error } = await supabase
     .from('djs')
-    .select('id')
-    .eq('name', normalizedName)
-    .maybeSingle();
-
-  if (selErr) throw selErr;
-  if (existing?.id) return existing.id;
-
-  const { data: inserted, error: insErr } = await supabase
-    .from('djs')
-    .insert({ name: normalizedName, image_url: thumbnailUrl })
+    .upsert(
+      { name: clean, image_url: thumbnailUrl ?? null },
+      { onConflict: 'name_key' }
+    )
     .select('id')
     .single();
 
-  if (insErr) throw insErr;
-  return inserted?.id ?? null;
+  if (error) throw error;
+  return data?.id ?? null;
 }
+

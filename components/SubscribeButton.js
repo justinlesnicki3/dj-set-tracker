@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { TouchableOpacity, Text, Alert } from 'react-native';
 import { supabase } from '../lib/supabase';
+import { ensureDjRow } from '../services/djDetailService';
 
 export default function SubscribeButton({
   djName,
@@ -9,52 +10,42 @@ export default function SubscribeButton({
   onSubbed,
   onUnsubbed,
 }) {
+  const canonicalName = useMemo(
+    () => (djName || '').trim().toLowerCase(),
+    [djName]
+  );
+
   const [djId, setDjId] = useState(null);
   const [isSubbed, setIsSubbed] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const normalizedName = (djName || '').trim();
-
+  // Ensure DJ row exists + get djId (canonical name!)
   useEffect(() => {
-    let isMounted = true;
+    let alive = true;
 
     (async () => {
       try {
-        if (!normalizedName) return;
+        if (!canonicalName) return;
 
-        const { data: existing, error: selErr } = await supabase
-          .from('djs')
-          .select('id')
-          .eq('name', normalizedName)
-          .maybeSingle();
+        const id = await ensureDjRow({
+          name: canonicalName,           // ✅ force canonical
+          thumbnailUrl: thumbnailUrl ?? null,
+        });
 
-        if (selErr) throw selErr;
-
-        if (existing?.id) {
-          if (isMounted) setDjId(existing.id);
-          return;
-        }
-
-        const { data: inserted, error: insErr } = await supabase
-          .from('djs')
-          .insert({ name: normalizedName, image_url: thumbnailUrl ?? null })
-          .select('id')
-          .single();
-
-        if (insErr) throw insErr;
-        if (isMounted) setDjId(inserted.id);
+        if (alive) setDjId(id || null);
       } catch (e) {
-        console.log('SubscribeButton ensureDjRow error:', e?.message);
+        console.log('SubscribeButton ensureDjRow error:', e?.message ?? e);
       }
     })();
 
     return () => {
-      isMounted = false;
+      alive = false;
     };
-  }, [normalizedName, thumbnailUrl]);
+  }, [canonicalName, thumbnailUrl]);
 
+  // Check subscription state
   useEffect(() => {
-    let isMounted = true;
+    let alive = true;
 
     (async () => {
       try {
@@ -69,19 +60,20 @@ export default function SubscribeButton({
           .maybeSingle();
 
         if (error) throw error;
-        if (isMounted) setIsSubbed(!!data);
+        if (alive) setIsSubbed(!!data);
       } catch {
         // ignore
       }
     })();
 
     return () => {
-      isMounted = false;
+      alive = false;
     };
   }, [djId]);
 
   const toggle = async () => {
     setLoading(true);
+
     try {
       const { data: auth } = await supabase.auth.getUser();
       if (!auth?.user) {
@@ -101,16 +93,21 @@ export default function SubscribeButton({
 
         setIsSubbed(false);
         onUnsubbed?.();
-      } else {
-        const { error } = await supabase
-          .from('subscriptions')
-          .insert({ user_id: auth.user.id, dj_id: djId });
-
-        if (error) throw error;
-
-        setIsSubbed(true);
-        onSubbed?.();
+        return;
       }
+
+      // ✅ upsert prevents "subscriptions_pkey" crash if something double-fires
+      const { error } = await supabase
+        .from('subscriptions')
+        .upsert(
+          { user_id: auth.user.id, dj_id: djId },
+          { onConflict: 'user_id,dj_id' }
+        );
+
+      if (error) throw error;
+
+      setIsSubbed(true);
+      onSubbed?.();
     } catch (e) {
       Alert.alert('Subscription error', e?.message ?? 'Unknown error');
     } finally {
@@ -121,15 +118,15 @@ export default function SubscribeButton({
   return (
     <TouchableOpacity
       onPress={(e) => {
-        e?.stopPropagation?.(); // ✅ prevents triggering parent card press
+        e?.stopPropagation?.(); // prevents parent card press
         toggle();
       }}
-      onPressIn={(e) => e?.stopPropagation?.()} // ✅ extra safety
-      disabled={loading || !normalizedName}
-      hitSlop={{ top: 2, bottom: 2, left: 2, right: 2 }} // ✅ tiny tap area (not huge)
+      onPressIn={(e) => e?.stopPropagation?.()}
+      disabled={loading || !canonicalName}
+      hitSlop={{ top: 2, bottom: 2, left: 2, right: 2 }}
       style={[
         {
-          alignSelf: 'flex-start', // ✅ keeps it tight
+          alignSelf: 'flex-start',
           flexGrow: 0,
           flexShrink: 0,
           paddingVertical: 6,
