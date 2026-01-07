@@ -19,6 +19,7 @@ import MyLeaksScreen from './screens/MyLeaksScreen';
 import ClipScreen from './screens/ClipScreen';
 import ClipPlayerScreen from './screens/ClipPlayerScreen';
 import PlaylistDetailScreen from './screens/PlaylistDetailScreen';
+import SettingsScreen from './screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -60,6 +61,7 @@ function MainTabs() {
       <Tab.Screen name="New Sets" component={NewSetsScreen} />
       <Tab.Screen name="My Leaks" component={MyLeaksScreen} />
       <Tab.Screen name="Library" component={DJLibraryScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 }

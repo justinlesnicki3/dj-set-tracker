@@ -1,17 +1,46 @@
-import React, {useEffect, useState} from 'react';
-import {supabase} from './lib/supabase';
+// Root.js
+import React, { useEffect, useState } from 'react';
+import { View, ActivityIndicator } from 'react-native';
+import { supabase } from './lib/supabase';
 import AuthScreen from './screens/AuthScreen';
 import App from './App';
 
 export default function Root() {
-    const [session, setSession] = useState(null);
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        supabase.auth.getSession().then(({data}) => setSession(data.session ?? null));
-        const {data: sub} = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
-        return () => sub.subscription.unsubscribe();  
-    }, []);
+  useEffect(() => {
+    let isMounted = true;
 
-    if (!session) return <AuthScreen/>;
-    return <App />;
+    // 1) initial session
+    supabase.auth.getSession().then(({ data }) => {
+      if (!isMounted) return;
+      setSession(data.session ?? null);
+      setLoading(false);
+    });
+
+    // 2) live auth changes
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession ?? null);
+    });
+
+    return () => {
+      isMounted = false;
+      sub?.subscription?.unsubscribe();
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  // ✅ Signed out
+  if (!session) return <AuthScreen />;
+
+  // ✅ Signed in
+  return <App />;
 }
