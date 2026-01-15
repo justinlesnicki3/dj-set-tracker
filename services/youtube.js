@@ -16,7 +16,6 @@ export const searchDJSets = async (djName, options = {}) => {
   }
 
   try {
-    // 1) Search up to 50 results (2 pages)
     const searchResults = [];
     let nextPageToken = null;
     let pageCount = 0;
@@ -31,7 +30,6 @@ export const searchDJSets = async (djName, options = {}) => {
           maxResults: 25,
           pageToken: nextPageToken,
           key: API_KEY,
-          // Keep the payload small
           fields: 'items(id/videoId,snippet(title,channelTitle,publishedAt,thumbnails/high/url)),nextPageToken',
         },
       });
@@ -43,7 +41,6 @@ export const searchDJSets = async (djName, options = {}) => {
       if (!nextPageToken) break;
     }
 
-    // 2) De-dupe by videoId before /videos lookup
     const idSet = new Set();
     const uniqueSearchResults = [];
     for (const item of searchResults) {
@@ -57,7 +54,6 @@ export const searchDJSets = async (djName, options = {}) => {
     const videoIds = uniqueSearchResults.map(i => i.id.videoId).join(',');
     if (!videoIds) return [];
 
-    // 3) Fetch details for duration + final fields
     const { data: detailsData } = await axios.get(VIDEO_DETAILS_URL, {
       signal,
       params: {
@@ -69,14 +65,12 @@ export const searchDJSets = async (djName, options = {}) => {
       },
     });
 
-    // 4) De-dupe details again (belt-and-suspenders)
     const uniqueDetailsMap = new Map();
     for (const v of detailsData.items || []) {
       if (!uniqueDetailsMap.has(v.id)) uniqueDetailsMap.set(v.id, v);
     }
     const uniqueDetails = Array.from(uniqueDetailsMap.values());
 
-    // 5) Filter likely “DJ sets”
     const longSets = uniqueDetails.filter(video => {
       const duration = parseISO8601Duration(video.contentDetails?.duration);
       const title = video.snippet?.title || '';
@@ -84,9 +78,8 @@ export const searchDJSets = async (djName, options = {}) => {
       return duration >= 50 && isLikelySet(title, channel, djName);
     });
 
-    // 6) Return a stable, unique shape (id is unique)
     return longSets.map(video => ({
-      id: video.id, // use this as React key
+      id: video.id, 
       videoId: video.id,
       title: video.snippet.title,
       thumbnail:

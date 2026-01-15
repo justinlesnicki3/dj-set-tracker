@@ -26,13 +26,13 @@ function LibraryRow({ item, expanded, onToggle, onRemove, onViewYouTube, onCreat
   const anim = useRef(new Animated.Value(expanded ? 1 : 0)).current;
   const [contentHeight, setContentHeight] = useState(0);
 
-  // animate open/close
+  // the animation for the open/close feature
   useEffect(() => {
     Animated.timing(anim, {
       toValue: expanded ? 1 : 0,
       duration: expanded ? 260 : 200,
       easing: expanded ? Easing.out(Easing.cubic) : Easing.in(Easing.cubic),
-      useNativeDriver: false, // height
+      useNativeDriver: false, 
     }).start();
   }, [expanded, anim]);
 
@@ -53,7 +53,6 @@ function LibraryRow({ item, expanded, onToggle, onRemove, onViewYouTube, onCreat
 
   return (
     <View style={styles.cardWrap}>
-      {/* Row tap toggles dropdown */}
       <TouchableOpacity activeOpacity={0.85} style={styles.item} onPress={onToggle}>
         <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
 
@@ -76,13 +75,11 @@ function LibraryRow({ item, expanded, onToggle, onRemove, onViewYouTube, onCreat
         </View>
       </TouchableOpacity>
 
-      {/* ✅ Hidden measurer: NOT constrained by animated height */}
       <View
         pointerEvents="none"
         style={styles.hiddenMeasure}
         onLayout={(e) => {
           const h = e.nativeEvent.layout.height;
-          // only set if changed (prevents loops)
           if (h && h !== contentHeight) setContentHeight(h);
         }}
       >
@@ -97,7 +94,6 @@ function LibraryRow({ item, expanded, onToggle, onRemove, onViewYouTube, onCreat
         </View>
       </View>
 
-      {/* ✅ Animated dropdown uses the measured height */}
       <Animated.View style={{ height, overflow: 'hidden' }}>
         <Animated.View style={{ opacity, transform: [{ translateY }] }}>
           <View style={styles.dropdown}>
@@ -236,7 +232,6 @@ const styles = StyleSheet.create({
   actionPrimary: { backgroundColor: '#33498e' },
   actionPrimaryText: { color: '#fff' },
 
-  // ✅ KEY FIX: hidden measurer that can layout at full height
   hiddenMeasure: {
     position: 'absolute',
     left: 0,

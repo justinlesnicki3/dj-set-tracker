@@ -29,7 +29,6 @@ export default function SettingsScreen() {
         onPress: async () => {
           try {
             await signOut();
-            // ✅ Root will auto-switch to AuthScreen via onAuthStateChange
           } catch (e) {
             Alert.alert('Logout failed', e?.message ?? 'Unknown error');
           }

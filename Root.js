@@ -12,14 +12,14 @@ export default function Root() {
   useEffect(() => {
     let isMounted = true;
 
-    // 1) initial session
+    
     supabase.auth.getSession().then(({ data }) => {
       if (!isMounted) return;
       setSession(data.session ?? null);
       setLoading(false);
     });
 
-    // 2) live auth changes
+   
     const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession ?? null);
     });
@@ -38,9 +38,9 @@ export default function Root() {
     );
   }
 
-  // ✅ Signed out
+  
   if (!session) return <AuthScreen />;
 
-  // ✅ Signed in
+  
   return <App />;
 }

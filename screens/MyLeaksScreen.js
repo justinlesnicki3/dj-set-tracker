@@ -81,7 +81,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
   header: { fontSize: 24, fontWeight: 'bold', marginBottom: 15 },
 
-  // The main row (looks like your old playlistItem)
   playlistItem: {
     padding: 15,
     backgroundColor: '#f2f2f2',
@@ -92,7 +91,6 @@ const styles = StyleSheet.create({
   playlistName: { fontSize: 18, fontWeight: 'bold' },
   count: { fontSize: 14, color: '#666', marginTop: 5 },
 
-  // Swipe action
   swipeDelete: {
     justifyContent: 'center',
     alignItems: 'center',

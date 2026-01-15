@@ -32,7 +32,7 @@ function NewSetsScreen() {
   const saved = isSetSaved(savedSets, item);
 
   const onOpen = () => {
-    const videoId = item?.videoId;     // ✅ only use the real YouTube id
+    const videoId = item?.videoId;    
     if (!videoId) return;
     openYouTubeVideo(videoId);
   };
@@ -48,7 +48,6 @@ function NewSetsScreen() {
 
   return (
     <View style={styles.card}>
-      {/* ✅ tap anywhere on this row opens youtube */}
       <TouchableOpacity style={styles.row} activeOpacity={0.85} onPress={onOpen}>
         <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
 
@@ -60,7 +59,6 @@ function NewSetsScreen() {
       </TouchableOpacity>
 
       <View style={styles.actions}>
-        {/* ✅ save button does NOT trigger open */}
         <TouchableOpacity
           onPress={(e) => {
             e.stopPropagation?.();

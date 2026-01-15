@@ -1,18 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { KeyboardAvoidingView, ScrollView } from 'react-native';
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  Alert,
-  TouchableOpacity,
-  Animated,
-  Easing,
-  Image,
-  Platform,
-  ActionSheetIOS,
-} from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, Animated, Easing, Image, Platform, ActionSheetIOS,} from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 import { Picker } from '@react-native-picker/picker';

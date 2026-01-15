@@ -39,7 +39,7 @@ function DJDetailScreen() {
 
         setDjSets(sets);
 
-        // ensure DJ row exists (use first thumbnail if available)
+        // make sure the DJ row exists
         const thumb = sets?.[0]?.thumbnail ?? null;
         const id = await ensureDjRow({ name: normalizedName, thumbnailUrl: thumb });
         if (!isMounted) return;
@@ -84,10 +84,10 @@ function DJDetailScreen() {
           Posted: {new Date(item.publishDate).toLocaleDateString()}
         </Text>
 
-        {/* ✅ Save button does NOT trigger row press */}
+        
         <TouchableOpacity
           onPress={(e) => {
-            e.stopPropagation?.(); // iOS/Android RN supports this
+            e.stopPropagation?.();
             handleToggleSave();
           }}
           activeOpacity={0.85}
@@ -109,7 +109,6 @@ function DJDetailScreen() {
         <Text style={styles.header}>
           {normalizedName ? `${normalizedName}'s Past Sets` : 'Past Sets'}
         </Text>
-        {/* djId is still available here if you need it later */}
       </View>
 
       {loading ? (

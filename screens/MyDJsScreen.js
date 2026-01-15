@@ -1,22 +1,10 @@
 import React from 'react';
-import {
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  ImageBackground,
-  View,
-} from 'react-native';
+import { Text, StyleSheet, FlatList, TouchableOpacity, ImageBackground, View,} from 'react-native';
 import { useAppContext } from '../AppContext';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  getDjImage,
-  buildDjDetailNavParams,
-  formatSubscribeDate,
-  keyForDj,
-} from '../services/myDjsService';
+import { getDjImage, buildDjDetailNavParams, formatSubscribeDate, keyForDj, } from '../services/myDjsService';
 
 function MyDJsScreen() {
   const { trackedDJs } = useAppContext();

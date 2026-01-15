@@ -19,7 +19,7 @@ export default function SubscribeButton({
   const [isSubbed, setIsSubbed] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Ensure DJ row exists + get djId (canonical name!)
+  
   useEffect(() => {
     let alive = true;
 
@@ -28,7 +28,7 @@ export default function SubscribeButton({
         if (!canonicalName) return;
 
         const id = await ensureDjRow({
-          name: canonicalName,           // ✅ force canonical
+          name: canonicalName,           
           thumbnailUrl: thumbnailUrl ?? null,
         });
 
@@ -43,7 +43,7 @@ export default function SubscribeButton({
     };
   }, [canonicalName, thumbnailUrl]);
 
-  // Check subscription state
+  
   useEffect(() => {
     let alive = true;
 
@@ -62,7 +62,7 @@ export default function SubscribeButton({
         if (error) throw error;
         if (alive) setIsSubbed(!!data);
       } catch {
-        // ignore
+        
       }
     })();
 
@@ -96,7 +96,6 @@ export default function SubscribeButton({
         return;
       }
 
-      // ✅ upsert prevents "subscriptions_pkey" crash if something double-fires
       const { error } = await supabase
         .from('subscriptions')
         .upsert(
@@ -118,7 +117,7 @@ export default function SubscribeButton({
   return (
     <TouchableOpacity
       onPress={(e) => {
-        e?.stopPropagation?.(); // prevents parent card press
+        e?.stopPropagation?.(); 
         toggle();
       }}
       onPressIn={(e) => e?.stopPropagation?.()}

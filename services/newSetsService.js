@@ -18,7 +18,6 @@ export async function refreshNewSetsFlow({ trackedDJs, refreshTrackedDJs }) {
   await refreshTrackedDJs(trackedDJs);
 }
 
-// ✅ new: saved-state + save toggle
 export function isSetSaved(savedSets = [], setItem) {
   const id = setItem?.id ?? setItem?.videoId;
   if (!id) return false;
@@ -30,12 +29,10 @@ export function saveSetFlow({ setItem, isSaved, addSavedSet, removeSavedSet }) {
   if (!id) return { ok: false };
 
   if (isSaved) {
-    // removeSavedSet expects an id in your context
     removeSavedSet?.(id);
     return { ok: true, saved: false };
   }
 
-  // addSavedSet expects full object
   addSavedSet?.(setItem);
   return { ok: true, saved: true };
 }

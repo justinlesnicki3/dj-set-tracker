@@ -17,7 +17,7 @@ export default function MiniPlayer({ onOpen }) {
         backgroundColor: '#111',
         borderTopLeftRadius: 14, borderTopRightRadius: 14,
         flexDirection: 'row', alignItems: 'center', gap: 12,
-        elevation: 12, // Android shadow
+        elevation: 12, 
         shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 8, shadowOffset: { width: 0, height: -2 },
       }}
     >

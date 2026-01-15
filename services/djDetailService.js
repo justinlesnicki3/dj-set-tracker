@@ -12,16 +12,10 @@ export async function fetchAndSortDjSets(djName) {
   return [...freshSets].sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
 }
 
-/**
- * Ensures a row exists in `djs` for this DJ name (normalized).
- * Returns djId (existing or newly created).
- */
-
 export async function ensureDjRow({ name, thumbnailUrl = null }) {
   const clean = (name || '').trim();
   if (!clean) return null;
 
-  // upsert by name_key (generated lower(name))
   const { data, error } = await supabase
     .from('djs')
     .upsert(

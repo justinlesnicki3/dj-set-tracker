@@ -1,5 +1,4 @@
 // services/myDjsService.js
-// NOTE: require(...) must stay static — this is fine in a service file.
 
 const djImages = {
   'disco lines': require('../assets/images/discolinesMYDJ.jpg'),

@@ -13,10 +13,6 @@ async function getUserId() {
   return data?.user?.id ?? null;
 }
 
-/**
- * Ensures a DJ exists in `djs` and returns its id.
- * Matches your existing “ensureDjRow” concept.
- */
 async function ensureDjRow({ name, imageUrl = null }) {
   const clean = (name || '').trim();
   if (!clean) return null;
@@ -40,12 +36,6 @@ async function ensureDjRow({ name, imageUrl = null }) {
   return inserted?.id ?? null;
 }
 
-/**
- * Loads core app data for the logged-in user from Supabase.
- * - trackedDJs from subscriptions join djs
- * - savedSets from saved_sets
- * - playlists + clips from playlists and clips
- */
 async function loadUserData() {
   const userId = await getUserId();
   if (!userId) {
@@ -89,17 +79,15 @@ async function loadUserData() {
 
   const trackedDJs = (subsRes.data || [])
     .map((row) => ({
-      // keep your UI expectation: { name, subscribeDate }
       djId: row.dj_id,
       name: normalizeName(row?.djs?.name),
       imageUrl: row?.djs?.image_url ?? null,
-      subscribeDate: row.created_at, // ISO from Supabase
+      subscribeDate: row.created_at, 
     }))
     .filter((d) => d.name);
 
   const savedSets = (savedRes.data || []).map((row) => ({
-    // shape matches your UI usage
-    id: row.video_id, // your UI often expects item.id; use video_id as stable key
+    id: row.video_id, 
     videoId: row.video_id,
     title: row.title,
     thumbnail: row.thumbnail,
@@ -126,7 +114,6 @@ async function loadUserData() {
     return acc;
   }, {});
 
-  // playlists[] must match your existing screens: { name, clips: [] }
   const playlists = playlistRows.map((p) => ({
     id: p.id,
     name: p.name,
@@ -146,7 +133,6 @@ export const AppProvider = ({ children }) => {
   const [savedSets, setSavedSets] = useState([]);
   const [playlists, setPlaylists] = useState([]);
 
-  // These can stay “runtime only” (derived from YouTube fetch)
   const [djLibrary, setDjLibrary] = useState([]);
   const [newSets, setNewSets] = useState([]);
 
@@ -155,7 +141,6 @@ export const AppProvider = ({ children }) => {
 
   const [loading, setLoading] = useState(true);
 
-  // avoid refresh double-trigger
   const didInitialYouTubeRefresh = useRef(false);
 
   const isAuthed = useMemo(() => trackedDJs != null, [trackedDJs]);
@@ -203,7 +188,6 @@ export const AppProvider = ({ children }) => {
     };
   }, []);
 
-  // ---------- TRACKED DJs (Supabase) ----------
   const addTrackedDJ = (dj) => {
   const cleanName = normalizeName(dj?.name);
   if (!cleanName) return;
@@ -217,7 +201,6 @@ export const AppProvider = ({ children }) => {
         name: cleanName,
         imageUrl: dj?.image_url ?? dj?.imageUrl ?? null,
         subscribeDate: new Date().toISOString(),
-        // optional: store djId if you already have it
         djId: dj?.djId ?? dj?.id ?? null,
       },
     ];
@@ -231,7 +214,6 @@ export const AppProvider = ({ children }) => {
 };
 
 
-  // ---------- SAVED SETS (Supabase) ----------
   const addSavedSet = async (setItem) => {
     try {
       const userId = await getUserId();
@@ -240,7 +222,7 @@ export const AppProvider = ({ children }) => {
       const videoId = setItem?.videoId ?? setItem?.id;
       if (!videoId) return;
 
-      // local dedupe
+     
       if (savedSets.some((s) => (s.videoId ?? s.id) === videoId)) return;
 
       const payload = {
@@ -286,7 +268,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // ---------- PLAYLISTS + CLIPS (Supabase) ----------
+ 
   const addPlaylist = async (name) => {
     try {
       const userId = await getUserId();
@@ -295,7 +277,7 @@ export const AppProvider = ({ children }) => {
       const clean = (name || '').trim();
       if (!clean) return;
 
-      // local dedupe by name
+      
       if (playlists.some((p) => p.name.toLowerCase() === clean.toLowerCase())) return;
 
       const { data, error } = await supabase
@@ -323,7 +305,7 @@ export const AppProvider = ({ children }) => {
         return;
       }
 
-      // cascades clips because FK on clips.playlist_id uses on delete cascade
+      
       const { error } = await supabase
         .from('playlists')
         .delete()
@@ -339,7 +321,6 @@ export const AppProvider = ({ children }) => {
   };
 
   const addLeak = async (leak) => {
-    // “leak” not tied to playlist in your UI anymore — we can store it as a clip with playlist_id = null
     try {
       const userId = await getUserId();
       if (!userId) return;
@@ -358,8 +339,6 @@ export const AppProvider = ({ children }) => {
       const { error } = await supabase.from('clips').insert(payload);
       if (error) throw error;
 
-      // you can ignore local update since UI is playlist based,
-      // but leaving no-op keeps compatibility
     } catch (e) {
       console.log('addLeak error:', e?.message ?? e);
     }
@@ -374,7 +353,6 @@ export const AppProvider = ({ children }) => {
       if (!name) return;
       if (!clip?.videoId || !clip?.start || !clip?.end || !clip?.title) return;
 
-      // ensure playlist exists
       let pl = playlists.find((p) => p.name === name);
 
       if (!pl) {
@@ -389,7 +367,6 @@ export const AppProvider = ({ children }) => {
         setPlaylists((prev) => [...prev, pl]);
       }
 
-      // insert clip
       const payload = {
         user_id: userId,
         playlist_id: pl.id,
@@ -408,7 +385,6 @@ export const AppProvider = ({ children }) => {
 
       if (error) throw error;
 
-      // update local playlist clips
       setPlaylists((prev) =>
         prev.map((p) => {
           if (p.id !== pl.id) return p;
@@ -462,8 +438,6 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // ---------- YOUTUBE REFRESH (runtime only) ----------
-  // Rule: NewSets if (posted last 30 days) OR (posted after subscribeDate)
   const refreshTrackedDJs = async (djList) => {
     if (!Array.isArray(djList) || djList.length === 0) return;
 
@@ -500,7 +474,6 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // optional: auto refresh once after initial load (Supabase -> YouTube)
   useEffect(() => {
     if (loading) return;
     if (didInitialYouTubeRefresh.current) return;
@@ -509,13 +482,11 @@ export const AppProvider = ({ children }) => {
     refreshTrackedDJs(trackedDJs).catch(() => {});
   }, [loading, trackedDJs]);
 
-  // ---------- CLEAR LOCAL USER DATA (Supabase) ----------
   const clearAllData = async () => {
     try {
       const userId = await getUserId();
       if (!userId) return;
 
-      // Delete in safe order (clips -> playlists, etc)
       await supabase.from('clips').delete().eq('user_id', userId);
       await supabase.from('playlists').delete().eq('user_id', userId);
       await supabase.from('saved_sets').delete().eq('user_id', userId);
@@ -529,7 +500,7 @@ export const AppProvider = ({ children }) => {
       setCurrentClip(null);
       setIsPlaying(false);
 
-      console.log('✅ All Supabase user data cleared');
+      console.log('All Supabase user data cleared');
     } catch (e) {
       console.log('Error clearing supabase data', e?.message ?? e);
     }
@@ -542,14 +513,14 @@ export const AppProvider = ({ children }) => {
         addTrackedDJ,
         removeTrackedDJ,
 
-        djLibrary,      // runtime only
-        addSetToLibrary: () => {}, // optional: no-op since savedSets is the real library
+        djLibrary,      
+        addSetToLibrary: () => {}, 
 
-        myLeaks: [], // optional legacy; playlists is the real structure now
+        myLeaks: [], 
         addLeak,
 
         refreshTrackedDJs,
-        newSets,        // runtime only
+        newSets,        
         loading,
 
         savedSets,
@@ -567,7 +538,7 @@ export const AppProvider = ({ children }) => {
         isPlaying,
         setIsPlaying,
 
-        clearAllData, // now clears Supabase instead of AsyncStorage
+        clearAllData, 
       }}
     >
       {children}
