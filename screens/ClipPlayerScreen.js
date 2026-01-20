@@ -8,9 +8,13 @@ import {
   nextIndex,
   prevIndex,
   openClipInYouTube,
-} from '../services/clipPlayerService';
+} from '../services/clipPlayerService';     //services for clip player logic
+
+//import services for playlist management
 
 import { deleteClipFromPlaylist } from '../services/playlistService';
+
+    //navigation hooks
 
 export default function ClipPlayerScreen() {
   const route = useRoute();
@@ -22,6 +26,8 @@ export default function ClipPlayerScreen() {
 
   const { removeClipFromPlaylist } = useAppContext();
 
+        // handles edge case to prevent crashes when no clip is available
+
   if (!currentClip) {
     return (
       <View style={styles.container}>
@@ -29,20 +35,25 @@ export default function ClipPlayerScreen() {
       </View>
     );
   }
-
+            //Displays UI/shows current clip's information 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{currentClip.title}</Text>
+    <View style={styles.container}> 
+      <Text style={styles.title}>{currentClip.title}</Text>     {/*Display clip metadata from currentClip*/}
       <Text style={styles.djSetTitle}>From: {currentClip.djSetTitle}</Text>
-      <Text style={styles.timestamp}>
+      <Text style={styles.timestamp}>       {/*display timestamp range for this specific clip*/}
         {currentClip.start} - {currentClip.end}
       </Text>
 
-      <View style={styles.playerWrapper}>
-        <Image
+      {/*video preview*/}
+
+      <View style={styles.playerWrapper}>   
+                {/**Create the image URL using Youtubes thumbnail API, hqdefault helps provide high quality thumbnail*/}
+        <Image      
           source={{ uri: `https://img.youtube.com/vi/${currentClip.videoId}/hqdefault.jpg` }}
           style={styles.thumbnail}
         />
+
+              {/**Opens full video in YouTube app at the correct timestamp assigned */}
 
         <TouchableOpacity style={styles.playButton} onPress={() => openClipInYouTube(currentClip)}>
           <Text style={styles.playButtonText}>▶️ Play in YouTube</Text>
@@ -50,12 +61,17 @@ export default function ClipPlayerScreen() {
       </View>
 
       <View style={styles.buttonRow}>
+
+        {/**Previous clip function */}
+
         <TouchableOpacity
           style={styles.button}
           onPress={() => setCurrentIndex((i) => prevIndex(i))}
         >
           <Text style={styles.buttonText}>Previous</Text>
         </TouchableOpacity>
+
+        {/**Delete clip function */}
 
         <TouchableOpacity
           style={[styles.button, { backgroundColor: '#d9534f' }]}
@@ -71,6 +87,8 @@ export default function ClipPlayerScreen() {
           <Text style={styles.buttonText}>Delete Clip</Text>
         </TouchableOpacity>
 
+        {/**Next clip function */}
+
         <TouchableOpacity
           style={styles.button}
           onPress={() => setCurrentIndex((i) => nextIndex(i, clips.length))}
@@ -81,6 +99,8 @@ export default function ClipPlayerScreen() {
     </View>
   );
 }
+
+            //Stylesheet
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9f9f9', padding: 20 },

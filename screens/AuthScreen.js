@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { signInWithEmail, signUpWithEmail } from '../services/auth';
+import { signInWithEmail, signUpWithEmail } from '../services/auth'; // import authentication functions from auth.js
 
-function AuthScreen({ navigation }) {
-  const [email, setEmail] = useState('');
+function AuthScreen({ navigation }) { //main authentication component to navigate between screens
+  
+  const [email, setEmail] = useState('');   //initialize state variables with useState
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSignUp = async () => {
+  const handleSignUp = async () => {    //function to handle sign ups for new members
     setError('');
     try {
       setLoading(true);
@@ -21,7 +22,7 @@ function AuthScreen({ navigation }) {
     }
   };
 
-  const handleSignIn = async () => {
+  const handleSignIn = async () => { //function to authenticate returning user
     setError('');
     try {
       setLoading(true);
@@ -33,14 +34,14 @@ function AuthScreen({ navigation }) {
       setLoading(false);
     }
   };
-
+            // UI Components
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to DJ Set Tracker</Text>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <TextInput
+      <TextInput    //Email input
         style={styles.input}
         placeholder="Email"
         placeholderTextColor="#999"
@@ -49,7 +50,7 @@ function AuthScreen({ navigation }) {
         value={email}
       />
 
-      <TextInput
+      <TextInput    //Password Input
         style={styles.input}
         placeholder="Password"
         placeholderTextColor="#999"
@@ -58,7 +59,7 @@ function AuthScreen({ navigation }) {
         value={password}
       />
 
-      <TouchableOpacity
+      <TouchableOpacity   //Sign in button
         style={[styles.button, { backgroundColor: '#33498e', opacity: loading ? 0.7 : 1 }]}
         onPress={handleSignIn}
         disabled={loading}
@@ -66,7 +67,7 @@ function AuthScreen({ navigation }) {
         <Text style={styles.buttonText}>{loading ? 'Loading...' : 'Sign In'}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
+      <TouchableOpacity   //Sign up button
         style={[styles.button, { backgroundColor: '#555', opacity: loading ? 0.7 : 1 }]}
         onPress={handleSignUp}
         disabled={loading}
@@ -76,6 +77,7 @@ function AuthScreen({ navigation }) {
     </View>
   );
 }
+    // Stylesheet
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24, justifyContent: 'center', backgroundColor: '#fff' },
