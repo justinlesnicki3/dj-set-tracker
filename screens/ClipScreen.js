@@ -11,15 +11,18 @@ import {
   buildLeak,
   resolvePlaylistName,
   saveLeakFlow,
-} from '../services/clipService';
+} from '../services/clipService'; // services for clip creation
+
+//navigation hooks
 
 function ClipScreen() {
   const route = useRoute();
   const navigation = useNavigation();
-  const { title, videoId } = route.params;
+  const { title, videoId } = route.params; //extract dj set info passed from search results
 
-  const { addLeak, playlists, addPlaylist, addClipToPlaylist } = useAppContext();
+  const { addLeak, playlists, addPlaylist, addClipToPlaylist } = useAppContext(); //gloabal state access, allow updating playlists across entrie app
 
+  // local state form inputs for creating a clip from this dj set
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [clipTitle, setClipTitle] = useState('');
@@ -27,9 +30,12 @@ function ClipScreen() {
   const [selectedPlaylist, setSelectedPlaylist] = useState('');
   const [showForm, setShowForm] = useState(false);
 
+  //control smooth fade in/fade out animations
   const formOpacity = useRef(new Animated.Value(0)).current;
   const formTranslate = useRef(new Animated.Value(-20)).current;
 
+
+  //animation function that smoothly reveals the clip creation form
   const animateFormIn = () => {
     setShowForm(true);
     Animated.parallel([
@@ -70,6 +76,16 @@ function ClipScreen() {
     });
   };
 
+  //save handler: validates inputs and saves the clip to a playlist
+
+  const handleSaveLeak = () => {
+    const validation = validateClipInputs({ start, end, clipTitle });
+    if (!validation.ok) {
+      Alert.alert('Error', validation.message);
+      return;
+    }
+
+    //build clip object, construct the data structure
   const handleSaveLeak = async () => {
   const validation = validateClipInputs({ start, end, clipTitle });
   if (!validation.ok) {
@@ -77,24 +93,24 @@ function ClipScreen() {
     return;
   }
 
-  const leak = buildLeak({
-    videoId,
-    start,
-    end,
-    clipTitle,
-    djSetTitle: title,
-  });
+    const leak = buildLeak({
+      videoId,
+      start,
+      end,
+      clipTitle,
+      djSetTitle: title,
+    });
 
   const playlistName = resolvePlaylistName({ newPlaylistName, selectedPlaylist });
 
-  try {
-    const result = await saveLeakFlow({
+    const result = saveLeakFlow({
       leak,
       playlistName,
       addLeak,
       addClipToPlaylist,
     });
-
+    
+    //alert that confirms clip has been saved
     Alert.alert(
       'Saved',
       `Clip saved${result.playlistName ? ` to "${result.playlistName}"` : ''}`
@@ -106,13 +122,19 @@ function ClipScreen() {
 };
 
 
+  //Main render, build UI
   return (
   <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+
+    {/*Prevents keyboard from covering input fields */}
     <KeyboardAvoidingView
       style={{ flex: 1 }}
+
+      //checks what kind of platform we are using because ios uses "Padding" as android uses "height"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0} // tweak if needed
     >
+      {/*Allows scrolling when content exceeds height*/}
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: 40 }}
@@ -120,19 +142,23 @@ function ClipScreen() {
         keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
         showsVerticalScrollIndicator={false}
       >
+        {/*Display name of the dj set*/}
         <Text style={styles.title}>{title}</Text>
 
+        {/*preview image of the dj set video, using YouTube thumbnail API*/}
         <Image
           source={{ uri: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` }}
           style={styles.thumbnail}
         />
 
+        {/*create make clip button when form is hidden*/}
         {!showForm && (
           <TouchableOpacity style={styles.makeClipButton} onPress={animateFormIn}>
             <Text style={styles.makeClipText}>+ Make Clip</Text>
           </TouchableOpacity>
         )}
-
+        
+        {/*show animated form*/}
         {showForm && (
           <Animated.View
             style={{
@@ -140,6 +166,7 @@ function ClipScreen() {
               transform: [{ translateY: formTranslate }],
             }}
           >
+            {/*clip title input section*/}
             <Text style={styles.label}>Clip Title</Text>
             <TextInput
               style={styles.input}
@@ -149,7 +176,8 @@ function ClipScreen() {
               returnKeyType="next"
               blurOnSubmit={false}
             />
-
+            
+            {/*start time input section*/}
             <Text style={styles.label}>Start Time</Text>
             <TextInput
               style={styles.input}
@@ -160,6 +188,7 @@ function ClipScreen() {
               blurOnSubmit={false}
             />
 
+            {/*end time input section*/}
             <Text style={styles.label}>End Time</Text>
             <TextInput
               style={styles.input}
@@ -170,6 +199,7 @@ function ClipScreen() {
               blurOnSubmit={true}
             />
 
+            {/*new playlist input section*/}
             <Text style={styles.label}>New Playlist Name (optional)</Text>
             <TextInput
               style={styles.input}
@@ -180,10 +210,14 @@ function ClipScreen() {
               blurOnSubmit={true}
             />
 
+
+            {/*conditional render, only shows playlist selector if a playlist already exists*/}
             {playlists.length > 0 && (
               <>
                 <Text style={styles.or}>or select existing playlist</Text>
 
+                {/*check platform once again to determine whether or not to use action sheet for ios
+                if Android then use Picker*/}
                 {Platform.OS === 'ios' ? (
                   <TouchableOpacity
                     style={styles.compactSelect}
@@ -229,11 +263,13 @@ function ClipScreen() {
                 )}
               </>
             )}
-
+            {/*Trigger save process*/}
             <TouchableOpacity style={styles.saveButton} onPress={handleSaveLeak}>
               <Text style={styles.saveButtonText}>Save Clip</Text>
             </TouchableOpacity>
 
+
+            {/*cancel button to trigger animations out and reset all form fields*/}
             <TouchableOpacity style={styles.cancelButton} onPress={animateFormOut}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
