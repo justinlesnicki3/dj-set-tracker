@@ -3,21 +3,14 @@ import { Linking } from 'react-native';
 export async function openYouTubeAt({ videoId, start = 0 }) {
   if (!videoId) throw new Error('Missing videoId');
 
-  const t = Math.max(0, Number(start) || 0);
+  const t = Math.max(0, Math.floor(Number(start) || 0));
 
-  // Try YouTube app first
-  const appUrl = `youtube://www.youtube.com/watch?v=${videoId}&t=${t}`;
-  // Fall back to web
-  const webUrl = `https://www.youtube.com/watch?v=${videoId}&t=${t}`;
+  // Use web URL. On iOS, if YouTube is installed, Universal Links usually open the app automatically.
+  // This avoids canOpenURL + LSApplicationQueriesSchemes issues in Expo Go.
+  const webUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}&t=${t}`;
 
-  const canOpenApp = await Linking.canOpenURL(appUrl);
-  if (canOpenApp) {
-    await Linking.openURL(appUrl);
-    return;
-  }
-
-  const canOpenWeb = await Linking.canOpenURL(webUrl);
-  if (!canOpenWeb) throw new Error('No app can open YouTube links on this device.');
+  const supported = await Linking.canOpenURL(webUrl);
+  if (!supported) throw new Error('No app can open YouTube links on this device.');
 
   await Linking.openURL(webUrl);
 }
