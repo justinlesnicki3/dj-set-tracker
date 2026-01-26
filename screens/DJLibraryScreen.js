@@ -11,7 +11,7 @@ import {
   Easing,
 } from 'react-native';
 import { useAppContext } from '../AppContext';
-import { openYouTubeVideo } from '../utils/openYouTubeAt';
+import { openYouTubeAt } from '../utils/openYouTubeAt';
 
 import {
   buildClipNavParams,
@@ -26,13 +26,12 @@ function LibraryRow({ item, expanded, onToggle, onRemove, onViewYouTube, onCreat
   const anim = useRef(new Animated.Value(expanded ? 1 : 0)).current;
   const [contentHeight, setContentHeight] = useState(0);
 
-  // the animation for the open/close feature
   useEffect(() => {
     Animated.timing(anim, {
       toValue: expanded ? 1 : 0,
       duration: expanded ? 260 : 200,
       easing: expanded ? Easing.out(Easing.cubic) : Easing.in(Easing.cubic),
-      useNativeDriver: false, 
+      useNativeDriver: false,
     }).start();
   }, [expanded, anim]);
 
@@ -131,10 +130,16 @@ function DJLibraryScreen({ navigation }) {
       removeSavedSetById(removeSavedSet, item.id);
     };
 
-    const onViewYouTube = () => {
-      const vid = buildYouTubeVideoId(item);
-      if (!vid) return;
-      openYouTubeVideo(vid);
+    // ✅ FIXED: pass an object to openYouTubeAt
+    const onViewYouTube = async () => {
+      const videoId = buildYouTubeVideoId(item);
+      if (!videoId) return;
+
+      try {
+        await openYouTubeAt({ videoId, start: 0 });
+      } catch (e) {
+        console.log('openYouTubeAt failed:', e?.message ?? e);
+      }
     };
 
     const onCreateClip = () => {
