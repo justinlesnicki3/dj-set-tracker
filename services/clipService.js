@@ -9,6 +9,7 @@ export function validateClipInputs({ start, end, clipTitle }) {
 
 export function buildLeak({ videoId, start, end, clipTitle, djSetTitle }) {
   return {
+    // local-only id (not DB id)
     id: `${videoId}-${start}-${end}`,
     title: clipTitle.trim(),
     djSetTitle,
@@ -21,21 +22,24 @@ export function buildLeak({ videoId, start, end, clipTitle, djSetTitle }) {
 export function resolvePlaylistName({ newPlaylistName, selectedPlaylist }) {
   return (newPlaylistName?.trim() || selectedPlaylist || '').trim();
 }
-export function saveLeakFlow({
+
+/**
+ * IMPORTANT:
+ * - If a playlistName is provided, ONLY call addClipToPlaylist (so playlist_id gets set).
+ * - Otherwise call addLeak (playlist_id = null).
+ * - Await the async calls so the save actually finishes before you navigate away.
+ */
+export async function saveLeakFlow({
   leak,
   playlistName,
-  playlists,
   addLeak,
-  addPlaylist,
   addClipToPlaylist,
 }) {
-  addLeak(leak);
-
   if (playlistName) {
-    const exists = playlists?.some((p) => p.name === playlistName);
-    if (!exists) addPlaylist(playlistName);
-    addClipToPlaylist(playlistName, leak);
+    await addClipToPlaylist(playlistName, leak);
+    return { ok: true, playlistName };
   }
 
-  return { ok: true, playlistName };
+  await addLeak(leak);
+  return { ok: true, playlistName: '' };
 }

@@ -70,29 +70,28 @@ function ClipScreen() {
     });
   };
 
-  const handleSaveLeak = () => {
-    const validation = validateClipInputs({ start, end, clipTitle });
-    if (!validation.ok) {
-      Alert.alert('Error', validation.message);
-      return;
-    }
+  const handleSaveLeak = async () => {
+  const validation = validateClipInputs({ start, end, clipTitle });
+  if (!validation.ok) {
+    Alert.alert('Error', validation.message);
+    return;
+  }
 
-    const leak = buildLeak({
-      videoId,
-      start,
-      end,
-      clipTitle,
-      djSetTitle: title,
-    });
+  const leak = buildLeak({
+    videoId,
+    start,
+    end,
+    clipTitle,
+    djSetTitle: title,
+  });
 
-    const playlistName = resolvePlaylistName({ newPlaylistName, selectedPlaylist });
+  const playlistName = resolvePlaylistName({ newPlaylistName, selectedPlaylist });
 
-    const result = saveLeakFlow({
+  try {
+    const result = await saveLeakFlow({
       leak,
       playlistName,
-      playlists,
       addLeak,
-      addPlaylist,
       addClipToPlaylist,
     });
 
@@ -101,7 +100,11 @@ function ClipScreen() {
       `Clip saved${result.playlistName ? ` to "${result.playlistName}"` : ''}`
     );
     navigation.goBack();
-  };
+  } catch (e) {
+    Alert.alert('Error', e?.message ?? 'Failed to save clip');
+  }
+};
+
 
   return (
   <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>

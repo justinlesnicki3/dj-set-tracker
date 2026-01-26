@@ -1,8 +1,12 @@
-import React, { useState, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
-import { useRoute, useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 import { LinearGradient } from 'expo-linear-gradient';
+
+function norm(s) {
+  return (s || '').trim().toLowerCase();
+}
 
 export default function PlaylistDetailScreen() {
   const { playlists } = useAppContext();
@@ -10,15 +14,11 @@ export default function PlaylistDetailScreen() {
   const navigation = useNavigation();
   const { playlistName } = route.params;
 
-  const [playlist, setPlaylist] = useState(null);
-  const [shuffled, setShuffled] = useState(false);
-
-  useFocusEffect(
-    useCallback(() => {
-      const latest = playlists.find(p => p.name === playlistName);
-      setPlaylist(latest);
-    }, [playlists, playlistName])
-  );
+  // ✅ Always pull the latest playlist from context
+  const playlist = useMemo(() => {
+    const target = norm(playlistName);
+    return playlists.find((p) => norm(p.name) === target) || null;
+  }, [playlists, playlistName]);
 
   const playClips = (clips) => {
     if (!clips?.length) {
@@ -33,29 +33,35 @@ export default function PlaylistDetailScreen() {
   };
 
   const handlePlayAll = () => {
-    setShuffled(false);
-    playClips(playlist.clips);
+    playClips(playlist?.clips || []);
   };
 
   const handleShuffle = () => {
-    setShuffled(true);
-    const shuffledClips = [...playlist.clips].sort(() => Math.random() - 0.5);
+    const clips = playlist?.clips || [];
+    if (!clips.length) {
+      Alert.alert('No clips', 'This playlist has no clips yet.');
+      return;
+    }
+    const shuffledClips = [...clips].sort(() => Math.random() - 0.5);
     playClips(shuffledClips);
   };
 
   const renderClip = ({ item }) => {
     const thumbnailURL =
       item.thumbnail ||
-      item.thumnail ||
+      item.thumnail || // keeping your typo fallback
       (item.videoId ? `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg` : '');
+
+    const clips = playlist?.clips || [];
+    const idx = clips.findIndex((c) => c.id === item.id);
 
     return (
       <TouchableOpacity
         style={styles.clipTouchable}
         onPress={() =>
           navigation.navigate('ClipPlayer', {
-            clips: playlist.clips,
-            startIndex: playlist.clips.findIndex(c => c.id === item.id),
+            clips,
+            startIndex: Math.max(idx, 0),
             playlistName,
           })
         }
@@ -92,7 +98,7 @@ export default function PlaylistDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{playlistName}</Text>
+      <Text style={styles.header}>{playlist.name}</Text>
 
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.actionButton} onPress={handlePlayAll}>
@@ -103,12 +109,12 @@ export default function PlaylistDetailScreen() {
         </TouchableOpacity>
       </View>
 
-      {playlist.clips.length === 0 ? (
+      {playlist.clips?.length === 0 ? (
         <Text style={styles.empty}>No clips in this playlist yet.</Text>
       ) : (
         <FlatList
           data={playlist.clips}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => String(item.id)}   // ✅ always string
           renderItem={renderClip}
           showsVerticalScrollIndicator={false}
         />
