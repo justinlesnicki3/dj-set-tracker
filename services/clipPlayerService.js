@@ -7,17 +7,13 @@ function toSecondsMaybe(value) {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
 
   const s = String(value).trim();
-
-  // "145" -> 145 seconds
   if (/^\d+$/.test(s)) return Number(s);
 
-  // "2:25" or "1:02:03"
   const parts = s.split(':').map(Number);
   if (parts.some(Number.isNaN)) return 0;
 
   if (parts.length === 2) return parts[0] * 60 + parts[1];
   if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-
   return 0;
 }
 

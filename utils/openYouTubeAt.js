@@ -5,12 +5,17 @@ export async function openYouTubeAt({ videoId, start = 0 }) {
 
   const t = Math.max(0, Math.floor(Number(start) || 0));
 
-  // Use web URL. On iOS, if YouTube is installed, Universal Links usually open the app automatically.
-  // This avoids canOpenURL + LSApplicationQueriesSchemes issues in Expo Go.
+  // Try YouTube app first
+  const appUrl = `youtube://watch?v=${encodeURIComponent(videoId)}&start=${t}`;
+
+  // Web fallback
   const webUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}&t=${t}`;
 
-  const supported = await Linking.canOpenURL(webUrl);
-  if (!supported) throw new Error('No app can open YouTube links on this device.');
+  const canOpenApp = await Linking.canOpenURL(appUrl);
+  if (canOpenApp) {
+    await Linking.openURL(appUrl);
+    return;
+  }
 
   await Linking.openURL(webUrl);
 }
