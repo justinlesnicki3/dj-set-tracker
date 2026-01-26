@@ -78,39 +78,31 @@ function ClipScreen() {
 
   //save handler: validates inputs and saves the clip to a playlist
 
-  const handleSaveLeak = () => {
-    const validation = validateClipInputs({ start, end, clipTitle });
-    if (!validation.ok) {
-      Alert.alert('Error', validation.message);
-      return;
-    }
-
-    //build clip object, construct the data structure
-  const handleSaveLeak = async () => {
+ const handleSaveLeak = async () => {
   const validation = validateClipInputs({ start, end, clipTitle });
   if (!validation.ok) {
     Alert.alert('Error', validation.message);
     return;
   }
 
-    const leak = buildLeak({
-      videoId,
-      start,
-      end,
-      clipTitle,
-      djSetTitle: title,
-    });
+  const leak = buildLeak({
+    videoId,
+    start,
+    end,
+    clipTitle,
+    djSetTitle: title,
+  });
 
   const playlistName = resolvePlaylistName({ newPlaylistName, selectedPlaylist });
 
-    const result = saveLeakFlow({
+  try {
+    const result = await saveLeakFlow({
       leak,
       playlistName,
       addLeak,
       addClipToPlaylist,
     });
-    
-    //alert that confirms clip has been saved
+
     Alert.alert(
       'Saved',
       `Clip saved${result.playlistName ? ` to "${result.playlistName}"` : ''}`
@@ -120,6 +112,7 @@ function ClipScreen() {
     Alert.alert('Error', e?.message ?? 'Failed to save clip');
   }
 };
+
 
 
   //Main render, build UI
