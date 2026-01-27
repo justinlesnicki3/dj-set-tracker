@@ -2,7 +2,7 @@ import React, { useCallback, useState, useMemo } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useAppContext } from '../AppContext';
-import { openYouTubeVideo } from '../utils/openYouTubeAt';
+import { openYouTubeAt } from '../utils/openYouTubeAt';
 
 import {
   sortSetsByNewest,
@@ -14,7 +14,9 @@ import {
 } from '../services/newSetsService';
 
 function NewSetsScreen() {
-  const { newSets, trackedDJs, refreshTrackedDJs, savedSets, addSavedSet, removeSavedSet } = useAppContext();
+  const { newSets, trackedDJs, refreshTrackedDJs, savedSets, addSavedSet, removeSavedSet } =
+    useAppContext();
+
   const [refreshing, setRefreshing] = useState(false);
 
   const sortedSets = useMemo(() => sortSetsByNewest(newSets), [newSets]);
@@ -29,53 +31,59 @@ function NewSetsScreen() {
   }, [trackedDJs, refreshTrackedDJs]);
 
   const renderSet = ({ item }) => {
-  const saved = isSetSaved(savedSets, item);
+    const saved = isSetSaved(savedSets, item);
 
-  const onOpen = () => {
-    const videoId = item?.videoId;    
-    if (!videoId) return;
-    openYouTubeVideo(videoId);
-  };
+    const onOpen = async () => {
+      const videoId = item?.videoId ?? item?.id;
+      if (!videoId) return;
 
-  const onToggleSave = () => {
-    saveSetFlow({
-      setItem: item,
-      isSaved: saved,
-      addSavedSet,
-      removeSavedSet,
-    });
-  };
+      try {
+        await openYouTubeAt({ videoId, start: 0 });
+      } catch (e) {
+        console.log('openYouTubeAt failed:', e?.message ?? e);
+      }
+    };
 
-  return (
-    <View style={styles.card}>
-      <TouchableOpacity style={styles.row} activeOpacity={0.85} onPress={onOpen}>
-        <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+    const onToggleSave = () => {
+      saveSetFlow({
+        setItem: item,
+        isSaved: saved,
+        addSavedSet,
+        removeSavedSet,
+      });
+    };
 
-        <View style={styles.info}>
-          <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
-          <Text style={styles.meta}>{item.djName}</Text>
-          <Text style={styles.meta}>Posted: {formatPostedDate(item.publishDate)}</Text>
-        </View>
-      </TouchableOpacity>
+    return (
+      <View style={styles.card}>
+        <TouchableOpacity style={styles.row} activeOpacity={0.85} onPress={onOpen}>
+          <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
 
-      <View style={styles.actions}>
-        <TouchableOpacity
-          onPress={(e) => {
-            e.stopPropagation?.();
-            onToggleSave();
-          }}
-          style={[styles.saveBtn, saved && styles.saveBtnSaved]}
-          activeOpacity={0.85}
-        >
-          <Text style={[styles.saveText, saved && styles.saveTextSaved]}>
-            {saved ? 'Saved' : 'Save for later'}
-          </Text>
+          <View style={styles.info}>
+            <Text style={styles.title} numberOfLines={2}>
+              {item.title}
+            </Text>
+            <Text style={styles.meta}>{item.djName}</Text>
+            <Text style={styles.meta}>Posted: {formatPostedDate(item.publishDate)}</Text>
+          </View>
         </TouchableOpacity>
-      </View>
-    </View>
-  );
-};
 
+        <View style={styles.actions}>
+          <TouchableOpacity
+            onPress={(e) => {
+              e.stopPropagation?.();
+              onToggleSave();
+            }}
+            style={[styles.saveBtn, saved && styles.saveBtnSaved]}
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.saveText, saved && styles.saveTextSaved]}>
+              {saved ? 'Saved' : 'Save for later'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>

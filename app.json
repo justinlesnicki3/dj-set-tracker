@@ -17,8 +17,6 @@
       "infoPlist": {
         "LSApplicationQueriesSchemes": [
           "youtube",
-          "vnd.youtube",
-          "youtube",
           "vnd.youtube"
         ]
       }
@@ -43,9 +41,7 @@
       }
     },
     "owner": "justinlesn",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/99b1b4f3-6d8e-4c56-a0b1-c950eddf721f"
     }
