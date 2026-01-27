@@ -11,7 +11,7 @@ export const searchDJSets = async (djName, options = {}) => {
   const { signal } = options;
 
   if (!API_KEY) {
-    console.error('❌ YOUTUBE_API_KEY is missing');
+    console.error('!! YOUTUBE_API_KEY is missing');
     return [];
   }
 
@@ -168,9 +168,9 @@ const isLikelySet = (title, channelTitle, djName) => {
   const hasSetKeyword = setKeywords.some(k => lowerTitle.includes(k));
   const hasBlacklisted = blacklist.some(b => lowerTitle.includes(b));
 
-  if (!hasDJName) console.log('❌ Skipped (no DJ name):', title);
-  else if (!hasSetKeyword) console.log('❌ Skipped (no keyword):', title);
-  else if (hasBlacklisted) console.log('❌ Skipped (blacklisted):', title);
+  if (!hasDJName) console.log('!! Skipped (no DJ name):', title);
+  else if (!hasSetKeyword) console.log('!! Skipped (no keyword):', title);
+  else if (hasBlacklisted) console.log('!! Skipped (blacklisted):', title);
 
   return hasDJName && hasSetKeyword && !hasBlacklisted;
 };

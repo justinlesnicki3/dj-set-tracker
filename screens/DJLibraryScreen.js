@@ -130,7 +130,6 @@ function DJLibraryScreen({ navigation }) {
       removeSavedSetById(removeSavedSet, item.id);
     };
 
-    // ✅ FIXED: pass an object to openYouTubeAt
     const onViewYouTube = async () => {
       const videoId = buildYouTubeVideoId(item);
       if (!videoId) return;
