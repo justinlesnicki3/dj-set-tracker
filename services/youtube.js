@@ -92,7 +92,7 @@ export const searchDJSets = async (djName, options = {}) => {
     }));
   } catch (error) {
     if (axios.isCancel(error)) {
-      console.warn('❌ YouTube API request was aborted');
+      console.warn('!!! YouTube API request was aborted');
     } else {
       console.error('YouTube API error:', error.response?.data || error.message);
     }

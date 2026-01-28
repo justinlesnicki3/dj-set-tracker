@@ -40,7 +40,7 @@ function MainTabs() {
             case 'New Sets':
               iconName = focused ? 'musical-notes' : 'musical-notes-outline';
               break;
-            case 'My Leaks':
+            case 'My Clips':
               iconName = focused ? 'albums' : 'albums-outline';
               break;
             case 'Library':
@@ -59,7 +59,7 @@ function MainTabs() {
       <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="My DJs" component={MyDJsScreen} />
       <Tab.Screen name="New Sets" component={NewSetsScreen} />
-      <Tab.Screen name="My Leaks" component={MyLeaksScreen} />
+      <Tab.Screen name="My Clips" component={MyLeaksScreen} />
       <Tab.Screen name="Library" component={DJLibraryScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
