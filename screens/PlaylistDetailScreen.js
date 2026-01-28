@@ -14,7 +14,7 @@ export default function PlaylistDetailScreen() {
   const navigation = useNavigation();
   const { playlistName } = route.params;
 
-  // ✅ Always pull the latest playlist from context
+  // Always pull the latest playlist from context
   const playlist = useMemo(() => {
     const target = norm(playlistName);
     return playlists.find((p) => norm(p.name) === target) || null;
@@ -55,6 +55,33 @@ export default function PlaylistDetailScreen() {
     const clips = playlist?.clips || [];
     const idx = clips.findIndex((c) => c.id === item.id);
 
+    // -------------------- Time Helpers --------------------
+function toSecondsMaybe(value) {
+  if (value == null) return 0;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+
+  const s = String(value).trim();
+
+  // "120"
+  if (/^\d+$/.test(s)) return Number(s);
+
+  // "mm:ss" or "hh:mm:ss"
+  const parts = s.split(':').map(Number);
+  if (parts.some(Number.isNaN)) return 0;
+
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+
+  return 0;
+}
+
+function formatTime(value) {
+  const sec = toSecondsMaybe(value);
+  const m = Math.floor(sec / 60);
+  const r = Math.floor(sec % 60);
+  return `${m}:${String(r).padStart(2, '0')}`;
+}
+
     return (
       <TouchableOpacity
         style={styles.clipTouchable}
@@ -79,7 +106,7 @@ export default function PlaylistDetailScreen() {
                 {item.title}
               </Text>
               <Text style={styles.clipTime}>
-                {item.start} - {item.end}
+                {formatTime(item.start)} - {formatTime(item.end)}
               </Text>
             </View>
           </View>
@@ -114,7 +141,7 @@ export default function PlaylistDetailScreen() {
       ) : (
         <FlatList
           data={playlist.clips}
-          keyExtractor={(item) => String(item.id)}   // ✅ always string
+          keyExtractor={(item) => String(item.id)}   //  always string
           renderItem={renderClip}
           showsVerticalScrollIndicator={false}
         />
