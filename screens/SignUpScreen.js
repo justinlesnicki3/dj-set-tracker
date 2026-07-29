@@ -1,5 +1,5 @@
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput} from 'react-native'
-import React from 'react'
+import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Alert} from 'react-native'
+import React, {useState} from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {themeColors} from '../theme'
 import {ArrowLeftIcon} from 'react-native-heroicons/solid'
@@ -8,16 +8,30 @@ import loginIMG from '../assets/images/logIn.png'
 import GoogleIMG from '../assets/images/Google_logo.png'
 import AppleIMG from '../assets/images/apple_logo.png'
 import signUpIMG from '../assets/images/signUp.png'
+import { signUpWithEmail } from '../services/authService'
 
 export default function SignUpScreen() {
     const navigation = useNavigation();
+    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+
 
     const handleSignUp = async () => {
+        if (!email.trim() || !password) {
+            Alert.alert('Error', 'Please enter an email and password');
+            return;
+        }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({ email: email.trim(), password });
-    setLoading(false);
-    if (error) Alert.alert('Error', error.message);
-    else Alert.alert('Success', 'Check your email to confirm your account!');
+    try {
+        await signUpWithEmail(email.trim(), password);
+        Alert.alert('Success', 'Check your email to confirm your account!');
+    } catch (err) {
+        Alert.alert('Error', err?.message ?? 'Sign up failed');
+    } finally {
+        setLoading(false);
+    }
 };
 
     return (
@@ -40,23 +54,31 @@ export default function SignUpScreen() {
                     <TextInput
                         style={styles.textInput}
                         placeholder='Enter Full Name'
+                        value={fullName}
+                        onChangeText={setFullName}
                     />
                     <Text style={styles.emailText}>Email Address</Text>
                     <TextInput
                         style={styles.textInput}
                         placeholder='Enter Email'
+                        value={email}
+                        onChangeText={setEmail}
+                        autoCapitalize='none'
+                        keyboardType="email-address"
                     />
                     <Text style={styles.emailText}>Password</Text>
                     <TextInput
                         style={styles.textInput}
                         secureTextEntry={true}
                         placeholder='Enter Password'
+                        value={password}
+                        onChangeText={setPassword}
                     />
                     <TouchableOpacity style={styles.forgotButton}>
                         <Text>Forgot Password?</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.loginButton}>
-                        <Text style={styles.loginText}>Sign Up</Text>
+                    <TouchableOpacity style={styles.loginButton} onPress={handleSignUp} disabled={loading}>
+                        <Text style={styles.loginText}>{loading ? 'Loading...' : 'Sign Up'}</Text>
                     </TouchableOpacity>
                 </View>
                 <Text style={styles.orOption}>

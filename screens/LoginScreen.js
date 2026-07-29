@@ -7,7 +7,8 @@ import { useNavigation } from '@react-navigation/native'
 import loginIMG from '../assets/images/logIn.png'
 import GoogleIMG from '../assets/images/Google_logo.png'
 import AppleIMG from '../assets/images/apple_logo.png'
-import { supabase } from '../lib/supabase' 
+import { signInWithEmail } from '../services/authService'
+
 
 export default function LoginScreen() {
     const navigation = useNavigation();
@@ -16,11 +17,15 @@ export default function LoginScreen() {
     const [loading, setLoading] = useState(false);
 
     const handleLogin = async () => {
-        setLoading(true);
-        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    setLoading(true);
+    try {
+        await signInWithEmail(email.trim(), password);
+    } catch (error) {
+        Alert.alert('Error', error?.message ?? 'Login failed');
+    } finally {
         setLoading(false);
-        if (error) Alert.alert('Error', error.message);
-    };
+    }
+};
 
     return (
         <View style={styles.container}>
