@@ -5,10 +5,19 @@ export function normalizeDjName(name) {
   return (name || '').trim().toLowerCase();
 }
 
-export function filterDJs(database = [], searchTerm = '') {
+export function filterDJs(database = [], searchTerm = '', genre = 'All') {
   const q = normalizeDjName(searchTerm);
-  if (!q) return [];
-  return database.filter((dj) => normalizeDjName(dj.name).includes(q));
+  let results = database;
+
+  if (genre && genre !== 'All') {
+    results = results.filter((dj) => (dj.genres || []).includes(genre));
+  }
+
+  if (q) {
+    results = results.filter((dj) => normalizeDjName(dj.name).includes(q));
+  }
+
+  return results;
 }
 
 export function isDjSubscribed(trackedDJs = [], djName = '') {

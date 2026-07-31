@@ -6,19 +6,20 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  ImageBackground,
   ActivityIndicator,
   Animated,
   Easing,
   Platform,
   StatusBar,
+  ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import SubscribeButton from '../components/SubscribeButton';
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
-import { DJ_DATABASE } from '../djData';
+import { DJ_DATABASE, EDM_GENRES, GENRE_IMAGES } from '../djData';
 import { Keyboard, TouchableWithoutFeedback } from 'react-native';
-
 
 import {
   filterDJs,
@@ -29,14 +30,17 @@ import {
 
 function SearchScreen() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedGenre, setSelectedGenre] = useState(null);
   const navigation = useNavigation();
   const { addTrackedDJ, trackedDJs, loading, removeTrackedDJ } = useAppContext();
 
   const resultsOpacity = useRef(new Animated.Value(0)).current;
   const resultsTranslate = useRef(new Animated.Value(12)).current;
 
+  const isBrowsing = searchTerm.trim().length === 0 && !selectedGenre;
+
   useEffect(() => {
-    if (searchTerm.trim().length === 0) return;
+    if (isBrowsing) return;
 
     resultsOpacity.setValue(0);
     resultsTranslate.setValue(12);
@@ -55,12 +59,22 @@ function SearchScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [searchTerm, resultsOpacity, resultsTranslate]);
+  }, [searchTerm, selectedGenre, isBrowsing, resultsOpacity, resultsTranslate]);
 
-  const filteredDJs = filterDJs(DJ_DATABASE, searchTerm);
+  const filteredDJs = filterDJs(DJ_DATABASE, searchTerm, selectedGenre || 'All');
 
   const handleViewDJ = (djName) => {
     navigation.navigate('DJDetail', buildDjDetailNavParams(djName));
+  };
+
+  const handleSelectGenre = (genre) => {
+    setSelectedGenre((prev) => (prev === genre ? null : genre));
+  };
+
+  const handleBackToBrowse = () => {
+    setSelectedGenre(null);
+    setSearchTerm('');
+    Keyboard.dismiss();
   };
 
   const renderDJItem = ({ item }) => (
@@ -105,63 +119,94 @@ function SearchScreen() {
   }
 
   return (
-  <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-    <View style={styles.screenWrapper}>
-      <StatusBar barStyle={Platform.OS === 'ios' ? 'dark-content' : 'dark-content'} />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.screenWrapper}>
+        <StatusBar barStyle="dark-content" />
 
-      <LinearGradient
-        colors={['#dfe9f3', '#ffffff']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.header}
-      >
-        <Text style={styles.title}>Search DJs</Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>Search DJs</Text>
 
-        <View style={styles.searchBarShadowWrapper}>
-          <LinearGradient
-            colors={['rgba(255,255,255,0.9)', 'rgba(240,240,240,0.95)']}
-            style={styles.searchBar}
+          <View style={styles.searchBarShadowWrapper}>
+            <LinearGradient
+              colors={['rgba(255,255,255,0.9)', 'rgba(240,240,240,0.95)']}
+              style={styles.searchBar}
+            >
+              <TextInput
+                placeholder="Type DJ name..."
+                placeholderTextColor="#555"
+                style={styles.input}
+                value={searchTerm}
+                onChangeText={setSearchTerm}
+                returnKeyType="search"
+              />
+            </LinearGradient>
+          </View>
+        </View>
+
+        {isBrowsing ? (
+          // -------------------- BROWSE MODE: big genre cards --------------------
+          <ScrollView
+            contentContainerStyle={styles.browseContent}
+            showsVerticalScrollIndicator={false}
           >
-            <TextInput
-              placeholder="Type DJ name..."
-              placeholderTextColor="#555"
-              style={styles.input}
-              value={searchTerm}
-              onChangeText={setSearchTerm}
-              returnKeyType="search"
+            {EDM_GENRES.map((genre) => {
+              const active = selectedGenre === genre;
+              return (
+                <TouchableOpacity
+                  key={genre}
+                  activeOpacity={0.85}
+                  onPress={() => handleSelectGenre(genre)}
+                  style={[styles.genreCardWrap, active && styles.genreCardWrapActive]}
+                >
+                  <ImageBackground
+                    source={GENRE_IMAGES[genre] || GENRE_IMAGES['Tech House']}
+                    style={styles.genreCard}
+                    imageStyle={styles.genreCardImage}
+                  >
+                    <LinearGradient
+                      colors={['transparent', 'rgba(0,0,0,0.75)']}
+                      locations={[0.3, 1]}
+                      style={styles.genreCardOverlay}
+                    >
+                      <Text style={styles.genreCardText}>{genre}</Text>
+                    </LinearGradient>
+                  </ImageBackground>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        ) : (
+          // -------------------- RESULTS MODE: chip row + list --------------------
+          <>
+            <View style={styles.resultsHeaderRow}>
+              <TouchableOpacity onPress={handleBackToBrowse} style={styles.backButton}>
+                <Text style={styles.backButtonText}>‹ Genres</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Animated.FlatList
+              data={filteredDJs}
+              keyExtractor={(item) => item.id}
+              renderItem={renderDJItem}
+              contentContainerStyle={{ padding: 20, paddingTop: 10 }}
+              ListEmptyComponent={<Text style={styles.emptyText}>No DJs found</Text>}
+              style={{
+                flex: 1,
+                opacity: resultsOpacity,
+                transform: [{ translateY: resultsTranslate }],
+              }}
+              keyboardShouldPersistTaps="handled"
             />
-          </LinearGradient>
-        </View>
-      </LinearGradient>
-
-      {searchTerm.trim().length === 0 ? (
-        <View style={styles.instructionWrapper}>
-          <Text style={styles.instructionText}>Start typing a DJ name…</Text>
-        </View>
-      ) : (
-        <Animated.FlatList
-          data={filteredDJs}
-          keyExtractor={(item) => item.id}
-          renderItem={renderDJItem}
-          contentContainerStyle={{ padding: 20, paddingTop: 10, paddingBottom: 100 }}
-          ListEmptyComponent={<Text style={styles.emptyText}>No DJs found</Text>}
-          style={{
-            flex: 1,
-            opacity: resultsOpacity,
-            transform: [{ translateY: resultsTranslate }],
-          }}
-          keyboardShouldPersistTaps="handled"
-        />
-      )}
-    </View>
-  </TouchableWithoutFeedback>
-);
-
+          </>
+        )}
+      </View>
+    </TouchableWithoutFeedback>
+  );
 }
 
 const styles = StyleSheet.create({
   screenWrapper: { flex: 1, backgroundColor: '#f5f6fa' },
-  header: { paddingTop: 60, paddingHorizontal: 20, paddingBottom: 20 },
+  header: { paddingTop: 60, paddingHorizontal: 20, paddingBottom: 16 },
   title: { fontSize: 28, fontWeight: '700', color: '#222', marginBottom: 16 },
   searchBarShadowWrapper: {
     shadowColor: '#000',
@@ -179,6 +224,44 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   input: { flex: 1, fontSize: 16, color: '#222' },
+
+  // Browse mode (big cards)
+  browseContent: { paddingHorizontal: 20, paddingBottom: 30 },
+  genreCardWrap: {
+    borderRadius: 24,
+    marginBottom: 16,
+    borderWidth: 3,
+    borderColor: 'transparent',
+    overflow: 'hidden',
+  },
+  genreCardWrapActive: {
+    borderColor: '#8B5CF6',
+  },
+  genreCard: {
+    height: 130,
+    justifyContent: 'flex-end',
+  },
+  genreCardImage: {
+    borderRadius: 21,
+  },
+  genreCardOverlay: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  genreCardText: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
+  },
+
+  // Results mode (chip row)
+  resultsHeaderRow: { paddingHorizontal: 20 },
+  backButton: { paddingVertical: 6 },
+  backButtonText: { color: '#33498e', fontSize: 15, fontWeight: '600' },
+
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -194,8 +277,6 @@ const styles = StyleSheet.create({
   },
   thumbnail: { width: 72, height: 72, borderRadius: 36, marginRight: 14 },
   djName: { fontSize: 17, fontWeight: '600', color: '#222' },
-  instructionWrapper: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  instructionText: { color: '#777', fontSize: 16 },
   emptyText: { textAlign: 'center', marginTop: 40, color: '#777', fontSize: 16 },
   loadingContainer: {
     flex: 1,
