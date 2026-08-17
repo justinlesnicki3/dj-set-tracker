@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  ImageBackground,
   ActivityIndicator,
   Animated,
   Easing,
@@ -27,6 +26,20 @@ import {
   subscribeFlow,
   unsubscribeFlow,
 } from '../services/searchService';
+
+// Fine-tune vertical crop per genre. Negative = shift image up (reveals more
+// of the top/face). Positive = shift down. Adjust per-image as needed.
+const GENRE_IMAGE_OFFSETS = {
+    'Tech House': -10,
+    'Bass House': 0,
+    'Melodic House': -25,
+    'Progressive House': -20,
+    'Deep House': -20,
+    'Techno': -55,
+    'UK Garage': 0,
+    'Trap': 0,
+    'Jersey Club': 0,
+};
 
 function SearchScreen() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -158,11 +171,15 @@ function SearchScreen() {
                   onPress={() => handleSelectGenre(genre)}
                   style={[styles.genreCardWrap, active && styles.genreCardWrapActive]}
                 >
-                  <ImageBackground
-                    source={GENRE_IMAGES[genre] || GENRE_IMAGES['Tech House']}
-                    style={styles.genreCard}
-                    imageStyle={styles.genreCardImage}
-                  >
+                  <View style={styles.genreCard}>
+                    <Image
+                      source={GENRE_IMAGES[genre] || GENRE_IMAGES['Tech House']}
+                      style={[
+                        styles.genreCardImage,
+                        { transform: [{ translateY: GENRE_IMAGE_OFFSETS[genre] ?? 0 }] },
+                      ]}
+                      resizeMode="cover"
+                    />
                     <LinearGradient
                       colors={['transparent', 'rgba(0,0,0,0.75)']}
                       locations={[0.3, 1]}
@@ -170,7 +187,7 @@ function SearchScreen() {
                     >
                       <Text style={styles.genreCardText}>{genre}</Text>
                     </LinearGradient>
-                  </ImageBackground>
+                  </View>
                 </TouchableOpacity>
               );
             })}
@@ -239,10 +256,16 @@ const styles = StyleSheet.create({
   },
   genreCard: {
     height: 130,
+    borderRadius: 21,
+    overflow: 'hidden',
     justifyContent: 'flex-end',
   },
   genreCardImage: {
-    borderRadius: 21,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: 260,
   },
   genreCardOverlay: {
     paddingHorizontal: 20,

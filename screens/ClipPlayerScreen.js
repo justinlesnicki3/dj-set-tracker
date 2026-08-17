@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 import {
   getCurrentClip,
@@ -54,14 +55,13 @@ export default function ClipPlayerScreen() {
 
   if (!currentClip) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         <Text style={styles.title}>No clip selected</Text>
-      </View>
+      </SafeAreaView>
     );
-  }
-
+}
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <Text style={styles.title}>{currentClip.title}</Text>
       <Text style={styles.djSetTitle}>From: {currentClip.djSetTitle}</Text>
 
@@ -120,7 +120,7 @@ export default function ClipPlayerScreen() {
           <Text style={styles.buttonText}>Next</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

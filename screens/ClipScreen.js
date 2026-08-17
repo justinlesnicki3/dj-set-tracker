@@ -5,6 +5,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../AppContext';
 import { Picker } from '@react-native-picker/picker';
 import { Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 import {
   validateClipInputs,
@@ -118,7 +119,7 @@ function ClipScreen() {
   //Main render, build UI
   return (
   <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-
+  <SafeAreaView style={{ flex: 1 }} edges={['top']}>
     {/*Prevents keyboard from covering input fields */}
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -270,6 +271,7 @@ function ClipScreen() {
         )}
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   </TouchableWithoutFeedback>
 );
 }

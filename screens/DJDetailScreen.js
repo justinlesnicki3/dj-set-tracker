@@ -14,6 +14,7 @@ import { useAppContext } from '../AppContext';
 
 import { fetchAndSortDjSets, ensureDjRow } from '../services/djDetailService';
 import { openSetInYouTube } from '../services/youtubeUiService';
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 function DJDetailScreen() {
   const { params } = useRoute();
@@ -104,7 +105,7 @@ function DJDetailScreen() {
 
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.headerRow}>
         <Text style={styles.header}>
           {normalizedName ? `${normalizedName}'s Past Sets` : 'Past Sets'}
@@ -122,7 +123,7 @@ function DJDetailScreen() {
           contentContainerStyle={{ paddingBottom: 90 }}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 

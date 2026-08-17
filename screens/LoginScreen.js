@@ -1,114 +1,212 @@
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Alert} from 'react-native'
-import React, {useState} from 'react'
+import React, { useState } from 'react'
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import {themeColors} from '../theme'
-import {ArrowLeftIcon} from 'react-native-heroicons/solid'
 import { useNavigation } from '@react-navigation/native'
-import loginIMG from '../assets/images/logIn.png'
-import GoogleIMG from '../assets/images/Google_logo.png'
-import AppleIMG from '../assets/images/apple_logo.png'
+import { EyeIcon, EyeSlashIcon, ArrowLeftIcon } from 'react-native-heroicons/solid'
 import { signInWithEmail } from '../services/authService'
-
 
 export default function LoginScreen() {
     const navigation = useNavigation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const handleLogin = async () => {
-    setLoading(true);
-    try {
-        await signInWithEmail(email.trim(), password);
-    } catch (error) {
-        Alert.alert('Error', error?.message ?? 'Login failed');
-    } finally {
-        setLoading(false);
-    }
-};
+        if (!email.trim() || !password) {
+            Alert.alert('Error', 'Please enter your email and password');
+            return;
+        }
+        setLoading(true);
+        try {
+            await signInWithEmail(email.trim(), password);
+        } catch (err) {
+            Alert.alert('Error', err?.message ?? 'Login failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleOAuthStub = (provider) => {
+        Alert.alert('Coming soon', `${provider} sign-in isn't set up yet.`);
+    };
 
     return (
-        <View style={styles.container}>
-            <SafeAreaView style={styles.areaView}>
-                <View>
-                    <TouchableOpacity style={styles.arrowIcon}
-                        onPress={()=> navigation.goBack()}
-                    >
-                        <ArrowLeftIcon size="30" color="black"></ArrowLeftIcon>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.imagePlacement}>
-                    <Image source={loginIMG} style={styles.loginImage}/>
-                </View>
-            </SafeAreaView>
-            <View style={styles.textBox}>
-                <View style={styles.emailBox}>
-                    <Text style={styles.emailText}>Email Address</Text>
+        <SafeAreaView style={styles.container}>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                <ArrowLeftIcon size={22} color="#fff" />
+            </TouchableOpacity>
+
+            <View style={styles.topSpacer} />
+
+            <Text style={styles.title}>Welcome Back!</Text>
+
+            <View style={styles.card}>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Email"
+                    placeholderTextColor="#ccc"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                />
+
+                <View style={styles.passwordRow}>
                     <TextInput
-                        style={styles.textInput}
-                        placeholder='Enter Email'
-                        value={email}
-                        onChangeText={setEmail}
-                        autoCapitalize="none"
-                    />
-                    <Text style={styles.emailText}>Password</Text>
-                    <TextInput
-                        style={styles.textInput}
-                        secureTextEntry={true}
-                        placeholder='Enter Password'
+                        style={styles.passwordInput}
+                        placeholder="Password"
+                        placeholderTextColor="#ccc"
                         value={password}
                         onChangeText={setPassword}
+                        secureTextEntry={!showPassword}
                     />
-                    <TouchableOpacity style={styles.forgotButton}>
-                        <Text>Forgot Password?</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
-                        <Text style={styles.loginText}>{loading ? 'Loading...' : 'Login'}</Text>
-                    </TouchableOpacity>
-                </View>
-                <Text style={styles.orOption}>
-                    Or
-                </Text>
-                <View style={styles.optionalSocials}>
-                    <TouchableOpacity style={styles.iconButtons}>
-                        <Image source={GoogleIMG} style={styles.googleImage} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.iconButtons}>
-                        <Image source={AppleIMG} style={styles.googleImage} />
+                    <TouchableOpacity
+                        onPress={() => setShowPassword((prev) => !prev)}
+                        style={styles.eyeButton}
+                    >
+                        {showPassword ? (
+                            <EyeSlashIcon size={20} color="#ccc" />
+                        ) : (
+                            <EyeIcon size={20} color="#ccc" />
+                        )}
                     </TouchableOpacity>
                 </View>
-                <View style={styles.noAccount}>
-                    <Text style={styles.noAccountText}>Don't have an account?</Text>
-                    <TouchableOpacity onPress={()=> navigation.navigate('Sign Up')}>
-                        <Text style={styles.signUpButton}> Sign Up</Text>
-                    </TouchableOpacity>
-                </View>
+
+                <TouchableOpacity
+                    style={styles.primaryButton}
+                    onPress={handleLogin}
+                    disabled={loading}
+                >
+                    <Text style={styles.primaryButtonText}>
+                        {loading ? 'Loading...' : 'Log In'}
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity>
+                    <Text style={styles.forgotText}>Forgot Password?</Text>
+                </TouchableOpacity>
             </View>
-        </View>
+
+            <View style={styles.dividerRow}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>Or Login with</Text>
+                <View style={styles.dividerLine} />
+            </View>
+
+            <View style={styles.oauthRow}>
+                <TouchableOpacity
+                    style={styles.oauthButton}
+                    onPress={() => handleOAuthStub('Google')}
+                >
+                    <Text style={styles.oauthG}>G</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.oauthButton, styles.oauthButtonDark]}
+                    onPress={() => handleOAuthStub('Apple')}
+                >
+                    <Text style={styles.oauthApple}></Text>
+                </TouchableOpacity>
+            </View>
+
+            <View style={styles.bottomSpacer} />
+
+            <View style={styles.noAccount}>
+                <Text style={styles.noAccountText}>Don't have an account? </Text>
+                <TouchableOpacity onPress={() => navigation.navigate('Sign Up')}>
+                    <Text style={styles.link}>Sign Up</Text>
+                </TouchableOpacity>
+            </View>
+        </SafeAreaView>
     )
 }
 
-const styles = StyleSheet.create ({
-
-    container: { flex: 1, backgroundColor: '#D8B4FE' },
-    areaView: {flex: 1},
-    arrowIcon: {backgroundColor: 'white', padding: 8, borderTopRightRadius: 16, borderBottomLeftRadius: 16, marginLeft: 16, width: 45},
-    loginImage: {width: 300, height: 300},
-    imagePlacement: {flexDirection: 'row', justifyContent: 'center'},
-    textBox: {flex: 1, backgroundColor: 'white', paddingHorizontal: 8, paddingTop: 8, borderTopLeftRadius: 50, borderTopRightRadius: 50},
-    emailBox: {marginBottom: 8, marginTop: 10},
-    emailText: {color: '#374151', marginLeft: 25, paddingTop: 10, paddingBottom: 5},
-    textInput: {padding: 16, backgroundColor: '#F3F4F6', color: '#374151', borderRadius: 16, marginHorizontal: 30, paddingTop: 15, marginBottom: 10},
-    forgotButton: {alignItems: 'flex-end', color: '#374151', marginBottom: 5, marginRight: 35},
-    loginButton: {paddingVertical: 10, backgroundColor: '#FBBF24', borderRadius: 12, marginHorizontal: 45, marginTop: 20},
-    loginText: {fontWeight: 'bold', textAlign: 'center', color: '#374151'},
-    orOption: {fontSize: 20, color: '#374151', fontWeight: 'bold', textAlign: 'center', paddingVertical: 10},
-    googleImage: {width: 35, height: 35},
-    optionalSocials: {flexDirection: 'row', justifyContent: 'center', gap: 38},
-    iconButtons: {padding: 8, backgroundColor: '#F3F4F6', borderRadius: 16},
-    noAccount: {flexDirection: 'row', justifyContent: 'center', marginTop: 24},
-    noAccountText: {fontWeight: '600', color: '#374151'},
-    signUpButton: {color: '#FBBF24'}
-
-
+const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#0d0d0f', paddingHorizontal: 24 },
+    backButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.08)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 8,
+    },
+    topSpacer: { flex: 1 },
+    title: { color: '#4db8ff', fontSize: 24, fontWeight: '700', textAlign: 'center', marginBottom: 24 },
+    card: {
+        backgroundColor: '#3a3a3d',
+        borderRadius: 24,
+        borderWidth: 2,
+        borderColor: '#fff',
+        padding: 20,
+    },
+    input: {
+        backgroundColor: '#555558',
+        borderWidth: 1,
+        borderColor: '#fff',
+        borderRadius: 14,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        color: '#fff',
+        marginBottom: 14,
+    },
+    passwordRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#555558',
+        borderWidth: 1,
+        borderColor: '#fff',
+        borderRadius: 14,
+        paddingHorizontal: 16,
+        marginBottom: 18,
+    },
+    passwordInput: {
+        flex: 1,
+        paddingVertical: 12,
+        color: '#fff',
+    },
+    eyeButton: { paddingLeft: 8 },
+    primaryButton: {
+        backgroundColor: '#4db8ff',
+        borderRadius: 14,
+        paddingVertical: 14,
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    primaryButtonText: { color: '#111', fontSize: 17, fontWeight: '700' },
+    forgotText: { color: '#eee', fontSize: 13, textAlign: 'center' },
+    dividerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 36,
+        marginBottom: 20,
+    },
+    dividerLine: { flex: 1, height: 1, backgroundColor: '#555' },
+    dividerText: { color: '#ccc', fontSize: 13, marginHorizontal: 10 },
+    oauthRow: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 16,
+    },
+    oauthButton: {
+        backgroundColor: '#e8e8ea',
+        paddingVertical: 12,
+        paddingHorizontal: 40,
+        borderRadius: 14,
+        alignItems: 'center',
+    },
+    oauthButtonDark: { backgroundColor: '#2a2a2c' },
+    oauthG: { fontSize: 18, fontWeight: '700', color: '#4285F4' },
+    oauthApple: { fontSize: 18, color: '#fff' },
+    bottomSpacer: { flex: 1 },
+    noAccount: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        paddingBottom: 24,
+    },
+    noAccountText: { color: '#eee', fontSize: 14 },
+    link: { color: '#4db8ff', fontSize: 14, fontWeight: '700' },
 })
